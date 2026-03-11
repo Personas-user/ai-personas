@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Personas – GenAI Hub</title>
+<link href=https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+  :root {
+    --blue-dark: #003865;
+    --blue-mid: #0070C0;
+    --blue-light: #00A3E0;
+    --accent: #00D4FF;
+    --bg: #00111F;
+    --card-bg: rgba(0, 56, 101, 0.3);
+  }
+ 
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    color: #fff;
+    overflow-x: hidden;
+  }
+ 
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,163,224,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,163,224,0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none; z-index: 0;
+  }
+ 
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%; left: 50%; transform: translateX(-50%);
+    width: 80vw; height: 80vw;
+    background: radial-gradient(ellipse, rgba(0,163,224,0.10) 0%, transparent 65%);
+    pointer-events: none; z-index: 0;
+  }
+ 
+  .scene {
+    position: relative; z-index: 1;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 52px 24px 60px;
+  }
+ 
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 52px;
+    animation: fadeDown 0.8s ease both;
+  }
+  .header-eyebrow {
+    display: inline-block;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(0,212,255,0.3);
+    padding: 5px 16px; border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(30px, 4.5vw, 52px);
+    font-weight: 800; letter-spacing: -0.02em; line-height: 1.1;
+    background: linear-gradient(135deg, #fff 40%, var(--accent) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .header p {
+    color: rgba(255,255,255,0.45);
+    font-size: 15px; font-weight: 300;
+    max-width: 480px; margin: 0 auto; line-height: 1.7;
+  }
+  .click-hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(0,212,255,0.5);
+    letter-spacing: 0.06em;
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100%{opacity:0.4} 50%{opacity:1}
+  }
+ 
+  /* ── GRID ── */
+  .personas-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+    align-items: end;
+  }
+  @media(max-width:860px){ .personas-grid{ grid-template-columns: repeat(4,1fr); } }
+  @media(max-width:520px){ .personas-grid{ grid-template-columns: repeat(3,1fr); } }
+ 
+  /* ── CARD ── */
+  .persona-card {
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer;
+    animation: riseIn 0.7s ease both;
+    transition: transform 0.2s ease;
+  }
+  .persona-card:nth-child(1){animation-delay:.1s}
+  .persona-card:nth-child(2){animation-delay:.2s}
+  .persona-card:nth-child(3){animation-delay:.3s}
+  .persona-card:nth-child(4){animation-delay:.4s}
+  .persona-card:nth-child(5){animation-delay:.5s}
+  .persona-card:nth-child(6){animation-delay:.6s}
+  .persona-card:nth-child(7){animation-delay:.7s}
+ 
+  .silhouette-wrap {
+    position: relative; width: 100%; aspect-ratio: 1/1.5;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .silhouette-wrap svg {
+    width: 100%; height: 100%; overflow: visible;
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1), filter 0.3s ease;
+    filter: drop-shadow(0 0 10px var(--glow, rgba(0,212,255,0.3)));
+  }
+ 
+  .persona-card:hover .silhouette-wrap svg {
+    transform: translateY(-10px) scale(1.06);
+  }
+  .persona-card.active .silhouette-wrap svg {
+    transform: translateY(-14px) scale(1.08);
+    filter: drop-shadow(0 0 28px var(--glow, rgba(0,212,255,0.7)));
+  }
+ 
+  /* active ring around active card */
+  .persona-card.active::before {
+    content: '';
+    position: absolute;
+    inset: -6px; border-radius: 16px;
+    border: 1.5px solid var(--p-color, rgba(0,212,255,0.5));
+    animation: ringPulse 1.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .persona-card { position: relative; }
+ 
+  @keyframes ringPulse {
+    0%,100%{opacity:0.4; transform:scale(1)}
+    50%{opacity:1; transform:scale(1.02)}
+  }
+ 
+  .pulse-ring {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 60%; height: 12px; border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(0,212,255,0.25) 0%, transparent 70%);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  .persona-card:nth-child(2) .pulse-ring{animation-delay:.3s}
+  .persona-card:nth-child(3) .pulse-ring{animation-delay:.6s}
+  .persona-card:nth-child(4) .pulse-ring{animation-delay:.9s}
+  .persona-card:nth-child(5) .pulse-ring{animation-delay:1.2s}
+  .persona-card:nth-child(6) .pulse-ring{animation-delay:1.5s}
+  .persona-card:nth-child(7) .pulse-ring{animation-delay:1.8s}
+ 
+  .persona-label {
+    margin-top: 12px; text-align: center; padding: 0 4px;
+  }
+  .persona-label .role {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(9px, 1.05vw, 11.5px);
+    font-weight: 700; letter-spacing: 0.03em;
+    color: #fff; line-height: 1.3; display: block;
+    transition: color 0.2s;
+  }
+  .persona-card.active .persona-label .role { color: var(--p-color, var(--accent)); }
+  .persona-label .tool {
+    font-size: clamp(8px, 0.85vw, 10px); font-weight: 300;
+    color: var(--accent); display: block; margin-top: 3px; opacity: 0.75;
+  }
+ 
+  /* ── GROUND LINE ── */
+  .ground-line {
+    position: relative; margin-top: 28px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.35) 20%, rgba(0,212,255,0.35) 80%, transparent);
+    animation: fadeIn 1.2s ease 1s both;
+  }
+ 
+  /* ── DETAIL PANEL ── */
+  .detail-panel {
+    margin-top: 28px;
+    animation: fadeIn 1s ease 1.2s both;
+  }
+ 
+  .detail-inner {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 32px 36px;
+    backdrop-filter: blur(16px);
+    transition: all 0.4s cubic-bezier(.4,0,.2,1);
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+ 
+  .detail-inner.has-content {
+    border-color: var(--active-color, rgba(0,212,255,0.3));
+    box-shadow: 0 0 40px rgba(0,212,255,0.06), inset 0 0 40px rgba(0,0,0,0.3);
+  }
+ 
+  /* default state */
+  .default-state {
+    text-align: center;
+    transition: opacity 0.3s ease;
+  }
+  .default-state .arrow-icon {
+    font-size: 28px; margin-bottom: 10px; opacity: 0.3;
+  }
+  .default-state p {
+    color: rgba(255,255,255,0.25);
+    font-size: 14px; letter-spacing: 0.05em;
+  }
+ 
+  /* persona detail content */
+  .persona-detail {
+    display: none;
+    animation: slideUp 0.4s cubic-bezier(.4,0,.2,1) both;
+  }
+  .persona-detail.visible { display: flex; gap: 36px; }
+ 
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+ 
+  .detail-left { flex: 0 0 200px; }
+  .detail-right { flex: 1; }
+ 
+  .detail-badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 12px; border-radius: 12px;
+    margin-bottom: 12px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.25);
+    color: var(--accent);
+  }
+  .detail-badge.colored {
+    background: var(--badge-bg, rgba(0,212,255,0.1));
+    border-color: var(--badge-border, rgba(0,212,255,0.25));
+    color: var(--badge-text, var(--accent));
+  }
+ 
+  .detail-role-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 800;
+    line-height: 1.2; margin-bottom: 6px;
+    color: #fff;
+  }
+ 
+  .detail-tagline {
+    font-size: 13px; font-weight: 300;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 20px;
+    line-height: 1.6;
+    font-style: italic;
+  }
+ 
+  .detail-tools {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px;
+  }
+  .tool-chip {
+    font-size: 11px; font-weight: 500;
+    padding: 5px 12px; border-radius: 20px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.03em;
+  }
+ 
+  .detail-desc {
+    font-size: 14px; font-weight: 300;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.8;
+  }
+ 
+  .detail-activities h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+ 
+  .activity-list {
+    list-style: none; display: flex; flex-direction: column; gap: 6px;
+  }
+  .activity-list li {
+    font-size: 13px; font-weight: 300;
+    color: rgba(255,255,255,0.6);
+    padding-left: 16px;
+    position: relative; line-height: 1.5;
+  }
+  .activity-list li::before {
+    content: '▸';
+    position: absolute; left: 0;
+    color: var(--active-color, var(--accent));
+    font-size: 10px; top: 2px;
+  }
+ 
+  /* mini silhouette in detail panel */
+  .mini-sil {
+    width: 110px; height: 165px;
+    margin: 0 auto 16px;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 20px var(--active-color, rgba(0,212,255,0.5)));
+  }
+ 
+  .close-btn {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.3); font-size: 20px;
+    transition: color 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .close-btn:hover { color: #fff; }
+ 
+  /* ── FOOTER ── */
+  .footer-tag {
+    margin-top: 28px; text-align: center;
+    font-size: 11px; color: rgba(255,255,255,0.18);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    animation: fadeIn 1.4s ease 1.5s both;
+  }
+ 
+  /* ── PARTICLES ── */
+  .particle {
+    position: absolute; width: 3px; height: 3px;
+    border-radius: 50%; opacity: 0;
+    animation: floatParticle linear infinite;
+    pointer-events: none;
+  }
+ 
+  /* ── KEYFRAMES ── */
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes riseIn   { from{opacity:0;transform:translateY(40px)}  to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn   { from{opacity:0} to{opacity:1} }
+  @keyframes pulse {
+    0%,100%{opacity:0.3;transform:translateX(-50%) scaleX(0.8)}
+    50%    {opacity:0.8;transform:translateX(-50%) scaleX(1.2)}
+  }
+  @keyframes floatParticle {
+    0%  {opacity:0;transform:translateY(0) translateX(0)}
+    10% {opacity:0.8}
+    90% {opacity:0.5}
+    100%{opacity:0;transform:translateY(-200px) translateX(var(--dx))}
+  }
+</style>
+</head>
+<body>
+<div class="scene">
+ 
+  <header class="header">
+    <div class="header-eyebrow">GenAI Hub · Internal</div>
+    <h1>Meet Your AI Persona</h1>
+    <p>Seven role-specific playbooks to help you integrate AI into your daily work — with confidence.</p>
+    <div class="click-hint">↓ Click any persona to explore their AI toolkit</div>
+  </header>
+ 
+  <div class="personas-grid" id="grid">
+ 
+    <!-- BA -->
+    <div class="persona-card" data-index="0" style="--p-color:#00D4FF">
+      <div class="silhouette-wrap">
+        <div class="pulse-ring"></div>
+        <svg viewBox="0 0 80 140" fill="none">
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00D4FF"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs>
+          <circle cx="40" cy="22" r="14" fill="url(#g1)" opacity="0.9"/>
+          <rect x="35" y="34" width="10" height="8" rx="3" fill="url(#g1)" opacity="0.85"/>
+          <path d="M18 60 Q20 42 40 40 Q60 42 62 60 L58 100 Q50 108 40 108 Q30 108 22 100 Z" fill="url(#g1)" opacity="0.8"/>
+          <path d="M20 60 Q10 68 12 86 Q14 90 20 88 Q22 78 24 70" fill="url(#g1)" opacity="0.75"/>
+          <rect x="4" y="76" width="18" height="22" rx="2" fill="rgba(0,212,255,0.2)" stroke="rgba(0,212,255,0.5)" stroke-width="1"/>
+          <line x1="7" y1="82" x2="19" y2="82" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+          <line x1="7" y1="86" x2="19" y2="86" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+          <line x1="7" y1="90" x2="14" y2="90" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+          <path d="M60 60 Q72 66 70 84 Q68 88 62 86 Q60 76 58 68" fill="url(#g1)" opacity="0.75"/>
+          <path d="M30 106 L26 138 Q28 140 32 138 L36 110" fill="url(#g1)" opacity="0.8"/>
+          <path d="M50 106 L54 138 Q52 140 48 138 L44 110" fill="url(#g1)" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="persona-label">
+        <span class="role">Business<br>Analyst</span>
+        <span class="tool">User Stories</span>
+      </div>
+    </div>
+ 
+    <!-- DevSecOps -->
+    <div class="persona-card" data-index="1" style="--p-color:#00FFAA">
+      <div class="silhouette-wrap">
+        <div class="pulse-ring"></div>
+        <svg viewBox="0 0 80 140" fill="none">
+          <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00FFAA"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs>
+          <circle cx="40" cy="22" r="14" fill="url(#g2)" opacity="0.9"/>
+          <rect x="35" y="34" width="10" height="8" rx="3" fill="url(#g2)" opacity="0.85"/>
+          <path d="M14 58 Q16 42 40 40 Q64 42 66 58 L60 100 Q50 110 40 110 Q30 110 20 100 Z" fill="url(#g2)" opacity="0.8"/>
+          <path d="M32 54 L40 50 L48 54 L48 66 Q40 72 32 66 Z" fill="rgba(0,255,170,0.2)" stroke="rgba(0,255,170,0.6)" stroke-width="1"/>
+          <path d="M38 57 L40 55 L42 57 L42 63 Q40 65 38 63 Z" fill="rgba(0,255,170,0.5)"/>
+          <path d="M16 58 Q6 70 10 88 Q14 92 20 88 L22 68" fill="url(#g2)" opacity="0.75"/>
+          <path d="M64 58 Q74 70 70 88 Q66 92 60 88 L58 68" fill="url(#g2)" opacity="0.75"/>
+          <rect x="22" y="86" width="36" height="22" rx="2" fill="rgba(0,255,170,0.1)" stroke="rgba(0,255,170,0.35)" stroke-width="1"/>
+          <rect x="24" y="88" width="32" height="14" rx="1" fill="rgba(0,30,20,0.6)"/>
+          <line x1="26" y1="91" x2="36" y2="91" stroke="#00FFAA" stroke-width="0.8" opacity="0.7"/>
+          <line x1="26" y1="94" x2="42" y2="94" stroke="#00FFAA" stroke-width="0.8" opacity="0.5"/>
+          <path d="M30 108 L26 138 Q28 140 32 138 L36 112" fill="url(#g2)" opacity="0.8"/>
+          <path d="M50 108 L54 138 Q52 140 48 138 L44 112" fill="url(#g2)" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="persona-label">
+        <span class="role">DevSecOps<br>Engineer</span>
+        <span class="tool">CI/CD & Security</span>
+      </div>
+    </div>
+ 
+    <!-- Frontend Dev -->
+    <div class="persona-card" data-index="2" style="--p-color:#FF8C42">
+      <div class="silhouette-wrap">
+        <div class="pulse-ring"></div>
+        <svg viewBox="0 0 80 140" fill="none">
+          <defs><linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF8C42"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs>
+          <circle cx="40" cy="22" r="14" fill="url(#g3)" opacity="0.9"/>
+          <rect x="35" y="34" width="10" height="8" rx="3" fill="url(#g3)" opacity="0.85"/>
+          <path d="M18 60 Q20 42 40 40 Q60 42 62 60 L58 100 Q50 108 40 108 Q30 108 22 100 Z" fill="url(#g3)" opacity="0.8"/>
+          <text x="27" y="72" font-size="16" fill="rgba(255,140,66,0.85)" font-family="monospace" font-weight="bold">&lt;/&gt;</text>
+          <path d="M20 60 Q8 72 10 90" stroke="url(#g3)" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.75"/>
+          <path d="M60 60 Q72 72 70 90" stroke="url(#g3)" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.75"/>
+          <rect x="6" y="90" width="22" height="14" rx="2" fill="rgba(255,140,66,0.12)" stroke="rgba(255,140,66,0.35)" stroke-width="1"/>
+          <rect x="52" y="90" width="22" height="14" rx="2" fill="rgba(255,140,66,0.12)" stroke="rgba(255,140,66,0.35)" stroke-width="1"/>
+          <path d="M30 106 L26 138 Q28 140 32 138 L36 110" fill="url(#g3)" opacity="0.8"/>
+          <path d="M50 106 L54 138 Q52 140 48 138 L44 110" fill="url(#g3)" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="persona-label">
+        <span class="role">Frontend<br>Developer</span>
+        <span class="tool">UI / Copilot</span>
+      </div>
+    </div>
+ 
+    <!-- Full Stack -->
+    <div class="persona-card" data-index="3" style="--p-color:#C97BFF">
+      <div class="silhouette-wrap">
+        <div class="pulse-ring"></div>
+        <svg viewBox="0 0 80 140" fill="none">
+          <defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C97BFF"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs>
+          <circle cx="40" cy="20" r="14" fill="url(#g4)" opacity="0.9"/>
+          <rect x="35" y="32" width="10" height="8" rx="3" fill="url(#g4)" opacity="0.85"/>
+          <path d="M16 60 Q18 40 40 38 Q62 40 64 60 L60 102 Q50 112 40 112 Q30 112 20 102 Z" fill="url(#g4)" opacity="0.8"/>
+          <rect x="27" y="52" width="26" height="6" rx="2" fill="rgba(201,123,255,0.35)" stroke="rgba(201,123,255,0.6)" stroke-width="0.8"/>
+          <rect x="27" y="61" width="26" height="6" rx="2" fill="rgba(201,123,255,0.2)" stroke="rgba(201,123,255,0.45)" stroke-width="0.8"/>
+          <rect x="27" y="70" width="26" height="6" rx="2" fill="rgba(201,123,255,0.1)" stroke="rgba(201,123,255,0.35)" stroke-width="0.8"/>
+          <path d="M18 60 Q6 74 10 94 Q14 96 20 92 L22 72" fill="url(#g4)" opacity="0.75"/>
+          <path d="M62 60 Q74 74 70 94 Q66 96 60 92 L58 72" fill="url(#g4)" opacity="0.75"/>
+          <path d="M30 110 L26 138 Q28 140 32 138 L36 112" fill="url(#g4)" opacity="0.8"/>
+          <path d="M50 110 L54 138 Q52 140 48 138 L44 112" fill="url(#g4)" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="persona-label">
+        <span class="role">Full Stack<br>Developer</span>
+        <span class="tool">End-to-End Dev</span>
+      </div>
+    </div>
+ 
+    <!-- PO / SM -->
+    <div class="persona-card" data-index="4" style="--p-color:#FFD166">
+      <div class="silhouette-wrap">
+        <div class="pulse-ring"></div>
+        <svg viewBox="0 0 80 140" fill="none">
+          <defs><linearGradient id="g5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD166"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs>
+          <circle cx="40" cy="22" r="14" fill="url(#g5)" opacity="0.9"/>
+          <rect x="35" y="34" width="10" height="8" rx="3" fill="url(#g5)" opacity="0.85"/>
+          <path d="M16 62 Q18 42 40 40 Q62 42 64 62 L60 100 Q50 110 40 110 Q30 110 20 100 Z" fill="url(#g5)" opacity="0.8"/>
+          <path d="M64 62 Q76 50 72 36 Q70 32 66 34 Q64 48 60 58" fill="url(#g5)" opacity="0.75"/>
+          <path d="M16 62 Q6 72 10 88 Q14 92 20 88 L22 68" fill="url(#g5)" opacity="0.75"/>
+          <rect x="58" y="28" width="16" height="14" rx="2" fill="rgba(255,209,102,0.25)" stroke="rgba(255,209,102,0.55)" stroke-width="1"/>
+          <line x1="60" y1="32" x2="72" y2="32" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
+          <line x1="60" y1="36" x2="72" y2="36" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>
+          <path d="M30 108 L24 138 Q27 140 31 138 L34 112" fill="url(#g5)" opacity="0.8"/>
+          <path d="M50 108 L56 138 Q53 140 49 138 L46 112" fill="url(#g5)" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="persona-label">
+        <span class="role">Product Owner<br>/ Scrum Master</span>
+        <span class="tool">Backlog & Sprints</span>
+      </div>
+    </div>
+ 
+    <!-- Solution Architect -->
+    <div class="persona-card" data-index="5" style="--p-color:#4FFFA0">
+      <div class="silhouette-wrap">
+        <div class="pulse-ring"></div>
+        <svg viewBox="0 0 80 140" fill="none">
+          <defs><linearGradient id="g6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4FFFA0"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs>
+          <circle cx="40" cy="19" r="15" fill="url(#g6)" opacity="0.9"/>
+          <rect x="35" y="32" width="10" height="9" rx="3" fill="url(#g6)" opacity="0.85"/>
+          <path d="M14 60 Q16 40 40 38 Q64 40 66 60 L62 104 Q50 114 40 114 Q30 114 18 104 Z" fill="url(#g6)" opacity="0.8"/>
+          <rect x="26" y="50" width="28" height="22" rx="2" fill="rgba(79,255,160,0.08)" stroke="rgba(79,255,160,0.45)" stroke-width="0.8"/>
+          <circle cx="34" cy="57" r="3" fill="rgba(79,255,160,0.5)"/>
+          <circle cx="46" cy="57" r="3" fill="rgba(79,255,160,0.5)"/>
+          <circle cx="40" cy="66" r="3" fill="rgba(79,255,160,0.5)"/>
+          <line x1="34" y1="57" x2="46" y2="57" stroke="rgba(79,255,160,0.4)" stroke-width="0.8"/>
+          <line x1="34" y1="57" x2="40" y2="66" stroke="rgba(79,255,160,0.4)" stroke-width="0.8"/>
+          <line x1="46" y1="57" x2="40" y2="66" stroke="rgba(79,255,160,0.4)" stroke-width="0.8"/>
+          <path d="M16 60 Q4 72 8 92 Q12 96 20 90 L22 70" fill="url(#g6)" opacity="0.75"/>
+          <path d="M64 60 Q76 72 72 92 Q68 96 60 90 L58 70" fill="url(#g6)" opacity="0.75"/>
+          <path d="M30 112 L26 138 Q28 140 32 138 L36 114" fill="url(#g6)" opacity="0.8"/>
+          <path d="M50 112 L54 138 Q52 140 48 138 L44 114" fill="url(#g6)" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="persona-label">
+        <span class="role">Solution<br>Architect</span>
+        <span class="tool">System Design</span>
+      </div>
+    </div>
+ 
+    <!-- Tester / QA -->
+    <div class="persona-card" data-index="6" style="--p-color:#FF6B9D">
+      <div class="silhouette-wrap">
+        <div class="pulse-ring"></div>
+        <svg viewBox="0 0 80 140" fill="none">
+          <defs><linearGradient id="g7" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF6B9D"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs>
+          <circle cx="40" cy="22" r="14" fill="url(#g7)" opacity="0.9"/>
+          <rect x="35" y="34" width="10" height="8" rx="3" fill="url(#g7)" opacity="0.85"/>
+          <path d="M18 60 Q20 42 40 40 Q60 42 62 60 L58 100 Q50 108 40 108 Q30 108 22 100 Z" fill="url(#g7)" opacity="0.8"/>
+          <circle cx="37" cy="62" r="8" fill="none" stroke="rgba(255,107,157,0.6)" stroke-width="1.5"/>
+          <line x1="43" y1="68" x2="50" y2="75" stroke="rgba(255,107,157,0.6)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M33 62 L36 65 L41 58" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M20 60 Q8 70 12 88 Q16 92 22 88 L24 68" fill="url(#g7)" opacity="0.75"/>
+          <path d="M60 60 Q72 70 68 88 Q64 92 58 88 L56 68" fill="url(#g7)" opacity="0.75"/>
+          <path d="M30 106 L26 138 Q28 140 32 138 L36 110" fill="url(#g7)" opacity="0.8"/>
+          <path d="M50 106 L54 138 Q52 140 48 138 L44 110" fill="url(#g7)" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="persona-label">
+        <span class="role">Tester<br>/ QA</span>
+        <span class="tool">Test Automation</span>
+      </div>
+    </div>
+ 
+  </div><!-- /personas-grid -->
+ 
+  <div class="ground-line"></div>
+ 
+  <!-- ── DETAIL PANEL ── -->
+  <div class="detail-panel">
+    <div class="detail-inner" id="detailInner">
+      <div class="default-state" id="defaultState">
+        <div class="arrow-icon">👆</div>
+        <p>Click any persona above to explore their role, AI tools, and daily activities</p>
+      </div>
+      <div class="persona-detail" id="personaDetail">
+        <button class="close-btn" id="closeBtn" title="Close">✕</button>
+        <div class="detail-left">
+          <svg class="mini-sil" id="miniSil" viewBox="0 0 80 140" fill="none"></svg>
+          <div style="text-align:center">
+            <div class="detail-tools" id="detailTools" style="justify-content:center"></div>
+          </div>
+        </div>
+        <div class="detail-right">
+          <div class="detail-badge colored" id="detailBadge">Persona</div>
+          <div class="detail-role-name" id="detailRole"></div>
+          <div class="detail-tagline" id="detailTagline"></div>
+          <div class="detail-desc" id="detailDesc"></div>
+          <div class="detail-activities">
+            <h4>Key AI-Enhanced Activities</h4>
+            <ul class="activity-list" id="activityList"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="footer-tag">GenAI Hub · Launched January 2026 · All 7 Personas Now Live on SharePoint</div>
+ 
+</div><!-- /scene -->
+ 
+<script>
+const PERSONAS = [
+  {
+    color: '#00D4FF',
+    role: 'Business Analyst',
+    tagline: '"Which AI tools help me turn requirements into results?"',
+    desc: 'The BA persona shows you how to use AI to accelerate every stage of requirements gathering and stakeholder communication — from raw inputs to polished user stories.',
+    tools: ['GenAI Lab', 'User Story Generator', 'Claude'],
+    activities: [
+      'Generate user stories from requirements in seconds',
+      'Automate process documentation and flowcharts',
+      'Summarise stakeholder feedback and meeting notes',
+      'Draft acceptance criteria with AI assistance',
+      'Identify gaps and edge cases in requirements',
+    ],
+    svgGrad: ['#00D4FF', '#0070C0'],
+  },
+  {
+    color: '#00FFAA',
+    role: 'DevSecOps Engineer',
+    tagline: '"How do I ship secure infrastructure faster with AI?"',
+    desc: 'The DevSecOps persona guides you through using AI to automate infrastructure-as-code, strengthen your CI/CD pipelines, and embed security checks from the start.',
+    tools: ['GitHub Copilot', 'Claude Code', 'Security Automation'],
+    activities: [
+      'Generate and validate infrastructure-as-code templates',
+      'Build and optimise CI/CD pipeline configurations',
+      'Automate security scanning and compliance checks',
+      'Write and review monitoring and alerting rules',
+      'Identify vulnerabilities and suggest remediation steps',
+    ],
+    svgGrad: ['#00FFAA', '#0070C0'],
+  },
+  {
+    color: '#FF8C42',
+    role: 'Frontend Developer',
+    tagline: '"How do I build better UIs in less time with AI?"',
+    desc: 'The Frontend Developer persona helps you use AI to speed up UI/UX implementation, catch bugs early, optimise performance, and deliver polished interfaces faster.',
+    tools: ['GitHub Copilot', 'Claude Code', 'GenAI Lab'],
+    activities: [
+      'Generate component boilerplate and UI layouts',
+      'Debug CSS, JS, and rendering issues with AI assistance',
+      'Optimise performance using AI-suggested refactors',
+      'Write and maintain unit and integration tests',
+      'Generate accessible markup and ARIA attributes',
+    ],
+    svgGrad: ['#FF8C42', '#0070C0'],
+  },
+  {
+    color: '#C97BFF',
+    role: 'Full Stack Developer',
+    tagline: '"How do I accelerate end-to-end development with AI?"',
+    desc: 'The Full Stack persona empowers you to use AI across the entire development stack — from database schemas and APIs to frontend components and deployment scripts.',
+    tools: ['GitHub Copilot', 'Claude Code', 'GenAI Lab'],
+    activities: [
+      'Generate API endpoints, controllers, and models',
+      'Design and optimise database schemas with AI',
+      'Refactor and document legacy code automatically',
+      'Write full-stack tests across frontend and backend',
+      'Quickly prototype and validate new features',
+    ],
+    svgGrad: ['#C97BFF', '#0070C0'],
+  },
+  {
+    color: '#FFD166',
+    role: 'Product Owner / Scrum Master',
+    tagline: '"How do I run better sprints and backlogs with AI?"',
+    desc: 'The PO/SM persona shows you how AI can streamline backlog management, sprint ceremonies, and team communication — so you can focus on outcomes, not admin.',
+    tools: ['GenAI Lab', 'Meeting AI', 'Claude'],
+    activities: [
+      'Automatically summarise meetings and extract action items',
+      'Prioritise and refine backlog items with AI suggestions',
+      'Generate sprint reports and stakeholder updates',
+      'Draft acceptance criteria and definition of done',
+      'Facilitate retrospectives with AI-powered prompts',
+    ],
+    svgGrad: ['#FFD166', '#0070C0'],
+  },
+  {
+    color: '#4FFFA0',
+    role: 'Solution Architect',
+    tagline: '"How do I design better systems and docs with AI?"',
+    desc: 'The Solution Architect persona helps you use AI to generate system diagrams, document architectural decisions, ensure compliance, and guide teams through complex design challenges.',
+    tools: ['Claude Code', 'AI Diagramming', 'GenAI Lab'],
+    activities: [
+      'Generate architecture diagrams from plain-language descriptions',
+      'Document architectural decisions and trade-offs with AI',
+      'Validate designs against compliance and security requirements',
+      'Create and review technical specifications faster',
+      'Guide teams with AI-assisted decision frameworks',
+    ],
+    svgGrad: ['#4FFFA0', '#0070C0'],
+  },
+  {
+    color: '#FF6B9D',
+    role: 'Tester / QA',
+    tagline: '"How do I build better test coverage faster with AI?"',
+    desc: 'The Tester/QA persona shows you how AI can help you create comprehensive test strategies, generate test cases automatically, and analyse defects more effectively.',
+    tools: ['GenAI Lab', 'Test Case Generator', 'Claude Code'],
+    activities: [
+      'Generate comprehensive test cases from user stories',
+      'Automate regression test creation and maintenance',
+      'Analyse defects and suggest root cause fixes',
+      'Create test data sets and edge-case scenarios',
+      'Review and improve test coverage with AI insights',
+    ],
+    svgGrad: ['#FF6B9D', '#0070C0'],
+  },
+];
+ 
+// SVG paths for mini silhouettes (reuse from main cards)
+const SVG_BODIES = [
+  `<defs><linearGradient id="mg0" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00D4FF"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs><circle cx="40" cy="22" r="14" fill="url(#mg0)" opacity="0.9"/><rect x="35" y="34" width="10" height="8" rx="3" fill="url(#mg0)" opacity="0.85"/><path d="M18 60 Q20 42 40 40 Q60 42 62 60 L58 100 Q50 108 40 108 Q30 108 22 100 Z" fill="url(#mg0)" opacity="0.8"/><path d="M20 60 Q10 68 12 86 Q14 90 20 88 Q22 78 24 70" fill="url(#mg0)" opacity="0.75"/><rect x="4" y="76" width="18" height="22" rx="2" fill="rgba(0,212,255,0.2)" stroke="rgba(0,212,255,0.5)" stroke-width="1"/><line x1="7" y1="82" x2="19" y2="82" stroke="rgba(255,255,255,0.5)" stroke-width="1"/><line x1="7" y1="86" x2="19" y2="86" stroke="rgba(255,255,255,0.4)" stroke-width="1"/><path d="M60 60 Q72 66 70 84 Q68 88 62 86 Q60 76 58 68" fill="url(#mg0)" opacity="0.75"/><path d="M30 106 L26 138 Q28 140 32 138 L36 110" fill="url(#mg0)" opacity="0.8"/><path d="M50 106 L54 138 Q52 140 48 138 L44 110" fill="url(#mg0)" opacity="0.8"/>`,
+  `<defs><linearGradient id="mg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00FFAA"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs><circle cx="40" cy="22" r="14" fill="url(#mg1)" opacity="0.9"/><rect x="35" y="34" width="10" height="8" rx="3" fill="url(#mg1)" opacity="0.85"/><path d="M14 58 Q16 42 40 40 Q64 42 66 58 L60 100 Q50 110 40 110 Q30 110 20 100 Z" fill="url(#mg1)" opacity="0.8"/><path d="M32 54 L40 50 L48 54 L48 66 Q40 72 32 66 Z" fill="rgba(0,255,170,0.2)" stroke="rgba(0,255,170,0.6)" stroke-width="1"/><path d="M38 57 L40 55 L42 57 L42 63 Q40 65 38 63 Z" fill="rgba(0,255,170,0.5)"/><path d="M16 58 Q6 70 10 88 Q14 92 20 88 L22 68" fill="url(#mg1)" opacity="0.75"/><path d="M64 58 Q74 70 70 88 Q66 92 60 88 L58 68" fill="url(#mg1)" opacity="0.75"/><path d="M30 108 L26 138 Q28 140 32 138 L36 112" fill="url(#mg1)" opacity="0.8"/><path d="M50 108 L54 138 Q52 140 48 138 L44 112" fill="url(#mg1)" opacity="0.8"/>`,
+  `<defs><linearGradient id="mg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF8C42"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs><circle cx="40" cy="22" r="14" fill="url(#mg2)" opacity="0.9"/><rect x="35" y="34" width="10" height="8" rx="3" fill="url(#mg2)" opacity="0.85"/><path d="M18 60 Q20 42 40 40 Q60 42 62 60 L58 100 Q50 108 40 108 Q30 108 22 100 Z" fill="url(#mg2)" opacity="0.8"/><text x="27" y="72" font-size="16" fill="rgba(255,140,66,0.85)" font-family="monospace" font-weight="bold">&lt;/&gt;</text><path d="M20 60 Q8 72 10 90" stroke="url(#mg2)" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.75"/><path d="M60 60 Q72 72 70 90" stroke="url(#mg2)" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.75"/><path d="M30 106 L26 138 Q28 140 32 138 L36 110" fill="url(#mg2)" opacity="0.8"/><path d="M50 106 L54 138 Q52 140 48 138 L44 110" fill="url(#mg2)" opacity="0.8"/>`,
+  `<defs><linearGradient id="mg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C97BFF"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs><circle cx="40" cy="20" r="14" fill="url(#mg3)" opacity="0.9"/><rect x="35" y="32" width="10" height="8" rx="3" fill="url(#mg3)" opacity="0.85"/><path d="M16 60 Q18 40 40 38 Q62 40 64 60 L60 102 Q50 112 40 112 Q30 112 20 102 Z" fill="url(#mg3)" opacity="0.8"/><rect x="27" y="52" width="26" height="6" rx="2" fill="rgba(201,123,255,0.35)" stroke="rgba(201,123,255,0.6)" stroke-width="0.8"/><rect x="27" y="61" width="26" height="6" rx="2" fill="rgba(201,123,255,0.2)" stroke="rgba(201,123,255,0.45)" stroke-width="0.8"/><rect x="27" y="70" width="26" height="6" rx="2" fill="rgba(201,123,255,0.1)" stroke="rgba(201,123,255,0.35)" stroke-width="0.8"/><path d="M18 60 Q6 74 10 94 Q14 96 20 92 L22 72" fill="url(#mg3)" opacity="0.75"/><path d="M62 60 Q74 74 70 94 Q66 96 60 92 L58 72" fill="url(#mg3)" opacity="0.75"/><path d="M30 110 L26 138 Q28 140 32 138 L36 112" fill="url(#mg3)" opacity="0.8"/><path d="M50 110 L54 138 Q52 140 48 138 L44 112" fill="url(#mg3)" opacity="0.8"/>`,
+  `<defs><linearGradient id="mg4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD166"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs><circle cx="40" cy="22" r="14" fill="url(#mg4)" opacity="0.9"/><rect x="35" y="34" width="10" height="8" rx="3" fill="url(#mg4)" opacity="0.85"/><path d="M16 62 Q18 42 40 40 Q62 42 64 62 L60 100 Q50 110 40 110 Q30 110 20 100 Z" fill="url(#mg4)" opacity="0.8"/><path d="M64 62 Q76 50 72 36 Q70 32 66 34 Q64 48 60 58" fill="url(#mg4)" opacity="0.75"/><path d="M16 62 Q6 72 10 88 Q14 92 20 88 L22 68" fill="url(#mg4)" opacity="0.75"/><rect x="58" y="28" width="16" height="14" rx="2" fill="rgba(255,209,102,0.25)" stroke="rgba(255,209,102,0.55)" stroke-width="1"/><line x1="60" y1="32" x2="72" y2="32" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/><path d="M30 108 L24 138 Q27 140 31 138 L34 112" fill="url(#mg4)" opacity="0.8"/><path d="M50 108 L56 138 Q53 140 49 138 L46 112" fill="url(#mg4)" opacity="0.8"/>`,
+  `<defs><linearGradient id="mg5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4FFFA0"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs><circle cx="40" cy="19" r="15" fill="url(#mg5)" opacity="0.9"/><rect x="35" y="32" width="10" height="9" rx="3" fill="url(#mg5)" opacity="0.85"/><path d="M14 60 Q16 40 40 38 Q64 40 66 60 L62 104 Q50 114 40 114 Q30 114 18 104 Z" fill="url(#mg5)" opacity="0.8"/><rect x="26" y="50" width="28" height="22" rx="2" fill="rgba(79,255,160,0.08)" stroke="rgba(79,255,160,0.45)" stroke-width="0.8"/><circle cx="34" cy="57" r="3" fill="rgba(79,255,160,0.5)"/><circle cx="46" cy="57" r="3" fill="rgba(79,255,160,0.5)"/><circle cx="40" cy="66" r="3" fill="rgba(79,255,160,0.5)"/><line x1="34" y1="57" x2="46" y2="57" stroke="rgba(79,255,160,0.4)" stroke-width="0.8"/><line x1="34" y1="57" x2="40" y2="66" stroke="rgba(79,255,160,0.4)" stroke-width="0.8"/><line x1="46" y1="57" x2="40" y2="66" stroke="rgba(79,255,160,0.4)" stroke-width="0.8"/><path d="M16 60 Q4 72 8 92 Q12 96 20 90 L22 70" fill="url(#mg5)" opacity="0.75"/><path d="M64 60 Q76 72 72 92 Q68 96 60 90 L58 70" fill="url(#mg5)" opacity="0.75"/><path d="M30 112 L26 138 Q28 140 32 138 L36 114" fill="url(#mg5)" opacity="0.8"/><path d="M50 112 L54 138 Q52 140 48 138 L44 114" fill="url(#mg5)" opacity="0.8"/>`,
+  `<defs><linearGradient id="mg6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF6B9D"/><stop offset="100%" stop-color="#0070C0" stop-opacity="0.5"/></linearGradient></defs><circle cx="40" cy="22" r="14" fill="url(#mg6)" opacity="0.9"/><rect x="35" y="34" width="10" height="8" rx="3" fill="url(#mg6)" opacity="0.85"/><path d="M18 60 Q20 42 40 40 Q60 42 62 60 L58 100 Q50 108 40 108 Q30 108 22 100 Z" fill="url(#mg6)" opacity="0.8"/><circle cx="37" cy="62" r="8" fill="none" stroke="rgba(255,107,157,0.6)" stroke-width="1.5"/><line x1="43" y1="68" x2="50" y2="75" stroke="rgba(255,107,157,0.6)" stroke-width="2" stroke-linecap="round"/><path d="M33 62 L36 65 L41 58" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 60 Q8 70 12 88 Q16 92 22 88 L24 68" fill="url(#mg6)" opacity="0.75"/><path d="M60 60 Q72 70 68 88 Q64 92 58 88 L56 68" fill="url(#mg6)" opacity="0.75"/><path d="M30 106 L26 138 Q28 140 32 138 L36 110" fill="url(#mg6)" opacity="0.8"/><path d="M50 106 L54 138 Q52 140 48 138 L44 110" fill="url(#mg6)" opacity="0.8"/>`,
+];
+ 
+let activeIndex = null;
+ 
+const cards        = document.querySelectorAll('.persona-card');
+const detailInner  = document.getElementById('detailInner');
+const defaultState = document.getElementById('defaultState');
+const personaDetail= document.getElementById('personaDetail');
+const miniSil      = document.getElementById('miniSil');
+const detailBadge  = document.getElementById('detailBadge');
+const detailRole   = document.getElementById('detailRole');
+const detailTagline= document.getElementById('detailTagline');
+const detailDesc   = document.getElementById('detailDesc');
+const detailTools  = document.getElementById('detailTools');
+const activityList = document.getElementById('activityList');
+const closeBtn     = document.getElementById('closeBtn');
+ 
+function showPersona(index) {
+  const p = PERSONAS[index];
+  activeIndex = index;
+ 
+  // update cards
+  cards.forEach((c, i) => c.classList.toggle('active', i === index));
+ 
+  // set CSS var for active color on detail panel
+  detailInner.style.setProperty('--active-color', p.color);
+  detailInner.classList.add('has-content');
+ 
+  // badge
+  detailBadge.textContent = 'AI Persona';
+  detailBadge.style.setProperty('--badge-bg', p.color + '22');
+  detailBadge.style.setProperty('--badge-border', p.color + '66');
+  detailBadge.style.setProperty('--badge-text', p.color);
+ 
+  detailRole.textContent = p.role;
+  detailTagline.textContent = p.tagline;
+  detailDesc.textContent = p.desc;
+ 
+  // tools
+  detailTools.innerHTML = '';
+  p.tools.forEach(t => {
+    const chip = document.createElement('div');
+    chip.className = 'tool-chip';
+    chip.textContent = t;
+    chip.style.borderColor = p.color + '55';
+    chip.style.color = p.color;
+    detailTools.appendChild(chip);
+  });
+ 
+  // activities
+  activityList.innerHTML = '';
+  p.activities.forEach(a => {
+    const li = document.createElement('li');
+    li.textContent = a;
+    activityList.appendChild(li);
+  });
+ 
+  // mini silhouette
+  miniSil.innerHTML = SVG_BODIES[index];
+  miniSil.style.filter = `drop-shadow(0 0 18px ${p.color}88)`;
+ 
+  // show
+  defaultState.style.display = 'none';
+  personaDetail.classList.add('visible');
+ 
+  // scroll into view smoothly
+  detailInner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+ 
+function hidePersona() {
+  activeIndex = null;
+  cards.forEach(c => c.classList.remove('active'));
+  detailInner.classList.remove('has-content');
+  personaDetail.classList.remove('visible');
+  defaultState.style.display = '';
+}
+ 
+cards.forEach((card, i) => {
+  card.addEventListener('click', () => {
+    if (activeIndex === i) { hidePersona(); }
+    else { showPersona(i); }
+  });
+});
+ 
+closeBtn.addEventListener('click', hidePersona);
+ 
+// ── PARTICLES ──
+const grid = document.getElementById('grid');
+grid.style.position = 'relative';
+const COLORS = ['#00D4FF','#00FFAA','#C97BFF','#FFD166','#FF6B9D','#4FFFA0','#FF8C42'];
+ 
+function spawnParticle() {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.background = COLORS[Math.floor(Math.random() * COLORS.length)];
+  p.style.left = (8 + Math.random() * 84) + '%';
+  p.style.bottom = (4 + Math.random() * 35) + '%';
+  p.style.setProperty('--dx', (Math.random() * 50 - 25) + 'px');
+  const dur = 2.5 + Math.random() * 3;
+  p.style.animationDuration = dur + 's';
+  p.style.animationDelay   = (Math.random() * 1.5) + 's';
+  p.style.boxShadow = `0 0 5px ${p.style.background}`;
+  grid.appendChild(p);
+  setTimeout(() => p.remove(), (dur + 2) * 1000);
+}
+setInterval(spawnParticle, 450);
+</script>
+</body>
+</html>
