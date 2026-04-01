@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Impact Campaign — Because Your Impact Matters</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --blue-deep:    #003781;
+    --blue-mid:     #0066CC;
+    --blue-bright:  #3399FF;
+    --blue-soft:    #E8F2FF;
+    --teal:         #00A4B4;
+    --gold:         #FFB800;
+    --white:        #FFFFFF;
+    --off-white:    #F7FAFF;
+    --text-dark:    #0A1628;
+    --text-mid:     #3A5070;
+    --shadow-soft:  0 8px 40px rgba(0,55,129,0.12);
+    --shadow-hover: 0 20px 60px rgba(0,55,129,0.22);
+    --radius:       20px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off-white);
+    color: var(--text-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Background mesh ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 0%,  rgba(0,102,204,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 100%, rgba(0,164,180,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%,  rgba(51,153,255,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 56px 24px 24px;
+    animation: fadeDown 0.9s ease both;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--blue-deep), var(--blue-mid));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  .badge svg { width: 13px; height: 13px; opacity: 0.85; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 700;
+    color: var(--blue-deep);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+
+  .tagline {
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    color: var(--text-mid);
+    letter-spacing: 0.06em;
+    font-weight: 300;
+  }
+
+  .tagline em {
+    font-style: normal;
+    color: var(--blue-mid);
+    font-weight: 500;
+  }
+
+  /* ── PROGRESS DOTS ── */
+  .progress {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 36px 0 10px;
+    position: relative;
+    z-index: 10;
+    animation: fadeUp 1s 0.3s ease both;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #c5d8f0;
+    transition: all 0.4s ease;
+  }
+  .dot.active { background: var(--blue-mid); transform: scale(1.3); }
+  .dot.done   { background: var(--teal); }
+
+  /* ── CARDS GRID ── */
+  .cards {
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    animation: fadeUp 1s 0.5s ease both;
+  }
+
+  /* ── SINGLE CARD ── */
+  .card {
+    perspective: 1000px;
+    cursor: pointer;
+    height: 420px;
+    outline: none;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.75s cubic-bezier(0.4, 0.2, 0.2, 1),
+                box-shadow 0.35s ease;
+    border-radius: var(--radius);
+  }
+
+  .card.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-front,
+  .card-back {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+  }
+
+  /* ── FRONT ── */
+  .card-front {
+    background: var(--white);
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 36px 28px;
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+
+  .card:hover .card-inner { box-shadow: var(--shadow-hover); }
+  .card:not(.flipped):hover .card-front { transform: translateY(-4px); }
+  /* prevent double-transform when flipped */
+  .card.flipped:hover .card-front { transform: none; }
+
+  .card-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #adc4e0;
+    font-weight: 400;
+  }
+
+  .card-illustration {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--blue-deep);
+    text-align: center;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .card-hint {
+    font-size: 0.78rem;
+    color: #9ab0cc;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .card-hint svg { animation: bounce 1.6s ease-in-out infinite; }
+
+  /* ── BACK ── */
+  .card-back {
+    transform: rotateY(180deg);
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .back-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-bottom: 6px;
+  }
+
+  .back-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 18px;
+  }
+
+  .back-bullets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .back-bullets li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .bullet-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .close-btn {
+    margin-top: 18px;
+    align-self: center;
+    background: rgba(255,255,255,0.25);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 20px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .close-btn:hover { background: rgba(255,255,255,0.38); }
+
+  /* ── CARD 1 — PROBLEM ── */
+  .card-1 .card-front .card-illustration {
+    background: linear-gradient(135deg, #e8f0fc, #cce0ff);
+  }
+  .card-1 .card-back {
+    background: linear-gradient(145deg, #0A2860, #003781);
+    color: #fff;
+  }
+  .card-1 .bullet-icon { background: rgba(255,255,255,0.15); }
+
+  /* ── CARD 2 — SOLUTION ── */
+  .card-2 .card-front .card-illustration {
+    background: linear-gradient(135deg, #ddf4f7, #b3e8ef);
+  }
+  .card-2 .card-back {
+    background: linear-gradient(145deg, #006070, #00A4B4);
+    color: #fff;
+  }
+  .card-2 .bullet-icon { background: rgba(255,255,255,0.15); }
+
+  /* ── CARD 3 — IMPACT ── */
+  .card-3 .card-front .card-illustration {
+    background: linear-gradient(135deg, #fff8e1, #ffe082);
+  }
+  .card-3 .card-back {
+    background: linear-gradient(145deg, #003781, #0066CC);
+    color: #fff;
+  }
+  .card-3 .bullet-icon { background: rgba(255,255,255,0.15); }
+
+  .metric {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    display: block;
+    margin-top: 6px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 0 24px 48px;
+    font-size: 0.78rem;
+    color: #9ab0cc;
+    letter-spacing: 0.05em;
+    animation: fadeUp 1s 0.8s ease both;
+  }
+  footer strong { color: var(--blue-mid); font-weight: 500; }
+
+  /* ── CONFETTI CANVAS ── */
+  #confetti-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #confetti-canvas.active { opacity: 1; }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(4px); }
+  }
+  @keyframes pulse-ring {
+    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0,102,204,0.35); }
+    70%  { transform: scale(1);    box-shadow: 0 0 0 14px rgba(0,102,204,0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0,102,204,0); }
+  }
+
+  .card-front { animation: pulse-ring 3s ease-in-out infinite; }
+  .card.flipped .card-front { animation: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .card { height: 340px; }
+    .back-title { font-size: 1.15rem; }
+    .metric { font-size: 1.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<!-- HEADER -->
+<header>
+  <div class="badge">
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.6l-3.7 1.9.7-4.1-3-2.9 4.2-.9L8 1z" fill="currentColor"/>
+    </svg>
+    AI Impact Campaign
+  </div>
+  <h1>From Manual Grind to<br>AI-Powered Migration</h1>
+  <p class="tagline">Moving To The New Allianz (A1) Branding · Powered by <em>Claude AI</em> · Because Your Impact Matters</p>
+</header>
+
+<!-- PROGRESS -->
+<div class="progress" id="progress">
+  <div class="dot" data-i="0"></div>
+  <div class="dot" data-i="1"></div>
+  <div class="dot" data-i="2"></div>
+</div>
+
+<!-- CARDS -->
+<div class="cards">
+
+  <!-- CARD 1: PROBLEM -->
+  <div class="card card-1" tabindex="0" data-index="0" onclick="flipCard(this)" onkeypress="if(event.key==='Enter')flipCard(this)" role="button" aria-label="Reveal the challenge">
+    <div class="card-inner">
+      <div class="card-front">
+        <span class="card-number">01 of 03</span>
+        <div class="card-illustration">
+          <!-- Broken link / migration icon -->
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="28" fill="#DDEEFF" opacity="0.6"/>
+            <rect x="14" y="22" width="16" height="10" rx="5" stroke="#003781" stroke-width="2.5" fill="none"/>
+            <rect x="34" y="32" width="16" height="10" rx="5" stroke="#003781" stroke-width="2.5" fill="none"/>
+            <line x1="30" y1="27" x2="34" y2="37" stroke="#CC3333" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 3"/>
+            <circle cx="32" cy="32" r="2.5" fill="#CC3333"/>
+            <path d="M20 46 Q32 40 44 46" stroke="#003781" stroke-width="2" fill="none" opacity="0.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h2 class="card-title">The Challenge</h2>
+        <span class="card-hint">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M4 9l3 3 3-3" stroke="#9ab0cc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Tap to explore
+        </span>
+      </div>
+      <div class="card-back">
+        <div>
+          <p class="back-label">01 — Problem</p>
+          <h3 class="back-title">Hundreds of web applications need to be migrated</h3>
+          <ul class="back-bullets">
+            <li>
+              <span class="bullet-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1.5"/><path d="M3 5l1.5 1.5L7 3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              New <strong>A1 branding</strong> mandated
+            </li>
+            <li>
+              <span class="bullet-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1.5"/><path d="M3 5l1.5 1.5L7 3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <strong>NDBX</strong> must go
+            </li>
+            <li>
+              <span class="bullet-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1.5"/><path d="M3 5l1.5 1.5L7 3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              Manual work <strong>drains resources</strong>
+            </li>
+          </ul>
+        </div>
+        <button class="close-btn" onclick="flipBack(event, this)">↩ Flip back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 2: SOLUTION -->
+  <div class="card card-2" tabindex="0" data-index="1" onclick="flipCard(this)" onkeypress="if(event.key==='Enter')flipCard(this)" role="button" aria-label="Reveal the solution">
+    <div class="card-inner">
+      <div class="card-front">
+        <span class="card-number">02 of 03</span>
+        <div class="card-illustration">
+          <!-- AI assistant / Claude icon -->
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="28" fill="#CCF0F4" opacity="0.6"/>
+            <!-- Head shape -->
+            <rect x="20" y="16" width="24" height="26" rx="12" fill="#00A4B4" opacity="0.85"/>
+            <!-- Eyes -->
+            <circle cx="27" cy="27" r="3" fill="white"/>
+            <circle cx="37" cy="27" r="3" fill="white"/>
+            <circle cx="28" cy="27" r="1.5" fill="#006070"/>
+            <circle cx="38" cy="27" r="1.5" fill="#006070"/>
+            <!-- Smile -->
+            <path d="M26 33 Q32 38 38 33" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <!-- Antenna -->
+            <line x1="32" y1="16" x2="32" y2="10" stroke="#00A4B4" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="32" cy="8.5" r="2.5" fill="#00A4B4"/>
+            <!-- Body hint -->
+            <path d="M24 42 Q32 48 40 42" stroke="#00A4B4" stroke-width="2" fill="none" opacity="0.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h2 class="card-title">The AI Solution</h2>
+        <span class="card-hint">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M4 9l3 3 3-3" stroke="#9ab0cc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Tap to explore
+        </span>
+      </div>
+      <div class="card-back">
+        <div>
+          <p class="back-label">02 — Solution</p>
+          <h3 class="back-title">AI-Assisted Migration with Claude</h3>
+          <ul class="back-bullets">
+            <li>
+              <span class="bullet-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1.5"/><path d="M3 5l1.5 1.5L7 3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <strong>Claude AI</strong> automates migration
+            </li>
+            <li>
+              <span class="bullet-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1.5"/><path d="M3 5l1.5 1.5L7 3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              Less <strong>manual</strong> coding work
+            </li>
+            <li>
+              <span class="bullet-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1.5"/><path d="M3 5l1.5 1.5L7 3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              Faster <strong>branding</strong> adoption
+            </li>
+          </ul>
+        </div>
+        <button class="close-btn" onclick="flipBack(event, this)">↩ Flip back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 3: IMPACT -->
+  <div class="card card-3" tabindex="0" data-index="2" onclick="flipCard(this)" onkeypress="if(event.key==='Enter')flipCard(this)" role="button" aria-label="Reveal the impact">
+    <div class="card-inner">
+      <div class="card-front">
+        <span class="card-number">03 of 03</span>
+        <div class="card-illustration">
+          <!-- Celebration / chart up icon -->
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="28" fill="#FFF3CC" opacity="0.7"/>
+            <!-- Bar chart -->
+            <rect x="16" y="36" width="8" height="14" rx="2" fill="#FFB800" opacity="0.6"/>
+            <rect x="28" y="26" width="8" height="24" rx="2" fill="#FFB800" opacity="0.8"/>
+            <rect x="40" y="16" width="8" height="34" rx="2" fill="#FFB800"/>
+            <!-- Arrow up -->
+            <path d="M44 14 l4-6 4 6" stroke="#003781" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <line x1="48" y1="8" x2="48" y2="18" stroke="#003781" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Stars -->
+            <path d="M13 14 l1 2 2 0 -1.6 1.2 0.6 2 -2-1.4 -2 1.4 0.6-2 -1.6-1.2 2 0z" fill="#FFB800"/>
+            <path d="M50 42 l0.7 1.4 1.4 0 -1.1 0.8 0.4 1.4 -1.4-1 -1.4 1 0.4-1.4 -1.1-0.8 1.4 0z" fill="#FFB800" opacity="0.7"/>
+          </svg>
+        </div>
+        <h2 class="card-title">The Impact</h2>
+        <span class="card-hint">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M4 9l3 3 3-3" stroke="#9ab0cc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Tap to celebrate 🎉
+        </span>
+      </div>
+      <div class="card-back">
+        <div>
+          <p class="back-label">03 — Impact</p>
+          <h3 class="back-title">Results That Speak for Themselves</h3>
+          <ul class="back-bullets">
+            <li>
+              <span class="bullet-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span><span class="metric">50%+</span> less effort</span>
+            </li>
+            <li>
+              <span class="bullet-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <strong>Faster</strong> brand rollout
+            </li>
+            <li>
+              <span class="bullet-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              Teams do <strong>higher-value</strong> work
+            </li>
+          </ul>
+        </div>
+        <button class="close-btn" onclick="flipBack(event, this)">↩ Flip back</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>AI Impact Campaign</strong> &nbsp;·&nbsp; Because Your Impact Matters &nbsp;·&nbsp; Allianz × Claude
+</footer>
+
+<script>
+  // ── STATE ──
+  const flipped = [false, false, false];
+
+  function flipCard(card) {
+    const idx = +card.dataset.index;
+    if (flipped[idx]) return; // prevent double-flip; use close btn
+    flipped[idx] = true;
+    card.classList.add('flipped');
+    updateProgress();
+    if (idx === 2) setTimeout(launchConfetti, 400);
+  }
+
+  function flipBack(event, btn) {
+    event.stopPropagation();
+    const card = btn.closest('.card');
+    const idx = +card.dataset.index;
+    flipped[idx] = false;
+    card.classList.remove('flipped');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    document.querySelectorAll('.dot').forEach((dot, i) => {
+      dot.classList.remove('active', 'done');
+      if (flipped[i]) dot.classList.add('done');
+      else if (!flipped.slice(0, i).some(v => !v) && !flipped[i]) {
+        // first un-flipped dot = active
+      }
+    });
+    // mark active as first unflipped
+    const first = flipped.indexOf(false);
+    if (first >= 0) document.querySelectorAll('.dot')[first].classList.add('active');
+  }
+  updateProgress();
+
+  // ── CONFETTI ──
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [], raf = null;
+
+  const COLORS = ['#003781','#0066CC','#3399FF','#00A4B4','#FFB800','#FFFFFF','#99CCFF'];
+
+  function launchConfetti() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.classList.add('active');
+
+    particles = Array.from({length: 140}, () => ({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * 80,
+      r: 4 + Math.random() * 6,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      vx: -2 + Math.random() * 4,
+      vy: 3 + Math.random() * 5,
+      spin: (Math.random() - 0.5) * 0.3,
+      angle: Math.random() * Math.PI * 2,
+      shape: Math.random() > 0.5 ? 'rect' : 'circle'
+    }));
+
+    if (raf) cancelAnimationFrame(raf);
+    let elapsed = 0;
+    const start = performance.now();
+
+    function draw(now) {
+      elapsed = now - start;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.07;
+        p.angle += p.spin;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, 1 - elapsed / 3800);
+        if (p.shape === 'rect') {
+          ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+      if (elapsed < 4000) {
+        raf = requestAnimationFrame(draw);
+      } else {
+        canvas.classList.remove('active');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+    raf = requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => {
+    if (canvas.classList.contains('active')) {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+  });
+</script>
+</body>
+</html>
