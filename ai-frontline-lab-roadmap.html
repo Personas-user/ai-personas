@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Frontline Lab Journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #EEF2FF;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Dot grid */
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image: radial-gradient(circle, #c5cfe8 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events:none; z-index:0;
+}
+/* Color wash */
+body::after {
+  content:''; position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 900px 600px at 10% 15%, rgba(255,220,160,0.38) 0%, transparent 60%),
+    radial-gradient(ellipse 700px 500px at 88% 75%, rgba(190,210,255,0.42) 0%, transparent 60%),
+    radial-gradient(ellipse 500px 400px at 55% 50%, rgba(200,255,220,0.18) 0%, transparent 60%);
+  pointer-events:none; z-index:0;
+}
+
+/* ── HEADER ── */
+.header {
+  position:relative; z-index:10;
+  text-align:center;
+  padding: 52px 24px 24px;
+}
+.header-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background: rgba(74,111,245,0.1);
+  border: 1.5px solid rgba(74,111,245,0.28);
+  border-radius:100px; padding:5px 16px 5px 10px;
+  font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
+  color:#4A6FF5; margin-bottom:18px;
+}
+.badge-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:#4A6FF5; box-shadow:0 0 0 3px rgba(74,111,245,0.2);
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+h1 {
+  font-family:'Syne',sans-serif;
+  font-size: clamp(30px,4.5vw,56px);
+  font-weight:800; letter-spacing:-0.03em;
+  color:#0D1B3E; line-height:1.1; margin-bottom:12px;
+}
+h1 span {
+  background: linear-gradient(135deg, #4A6FF5 0%, #B44FFF 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.header-slogan {
+  font-family:'Syne',sans-serif;
+  font-size: clamp(13px, 2vw, 17px);
+  font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+  background: linear-gradient(135deg, #4A6FF5 0%, #B44FFF 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  margin-bottom:10px;
+  opacity:0.9;
+}
+.header-sub { font-size:15px; color:#6B7A99; max-width:440px; margin:0 auto; line-height:1.6; }
+
+/* Hint */
+.click-hint {
+  display:inline-flex; align-items:center; gap:7px;
+  margin-top:18px;
+  background:rgba(255,255,255,0.7); border:1px solid rgba(74,111,245,0.2);
+  border-radius:100px; padding:7px 18px;
+  font-size:12px; color:#6B7A99;
+  backdrop-filter:blur(8px);
+  animation: hintPulse 3s ease-in-out infinite;
+}
+.click-hint svg { flex-shrink:0; }
+@keyframes hintPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
+
+/* ── CANVAS WRAPPER ── */
+.canvas-wrap {
+  position:relative; z-index:1;
+  width:100%; overflow-x:hidden; overflow-y:visible;
+}
+.canvas-area {
+  position:relative;
+  width:1260px;
+  height:960px;
+  margin:30px auto 0;
+  transform-origin:top center;
+}
+
+/* ── SVG ── */
+.road-svg {
+  position:absolute; top:0; left:0;
+  width:100%; height:100%;
+  overflow:visible; pointer-events:none;
+}
+.road-svg .clickable { pointer-events:all; }
+
+.rd-shd { fill:none; stroke:rgba(0,0,0,0.10); stroke-width:60; stroke-linecap:round; stroke-linejoin:round; }
+.rd-bod { fill:none; stroke:#3A4A60; stroke-width:48; stroke-linecap:round; stroke-linejoin:round; }
+.rd-ctr { fill:none; stroke:#fff; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;
+          stroke-dasharray:24 18; animation:roadAnim 3.5s linear infinite; opacity:0.65; }
+@keyframes roadAnim { to { stroke-dashoffset:-84; } }
+
+/* Connector lines — hidden until node active */
+.conn {
+  fill:none; stroke-width:2.5; stroke-dasharray:7 6;
+  opacity:0; transition:opacity 0.35s ease;
+  stroke-linecap:round;
+}
+.conn.visible { opacity:0.8; }
+
+/* ── ROAD NODES ── */
+.rnode {
+  cursor:pointer;
+  transition:transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  transform-box:fill-box; transform-origin:center;
+}
+.rnode:hover { transform:scale(1.2); }
+.rnode.active { transform:scale(1.28); }
+
+/* Pulsing ring on active node */
+.rnode .pulse-ring {
+  fill:none; stroke-width:3; opacity:0;
+  transform-box:fill-box; transform-origin:center;
+  transition:opacity 0.3s;
+}
+.rnode.active .pulse-ring {
+  opacity:1;
+  animation:ringPulse 1.4s ease-out infinite;
+}
+@keyframes ringPulse {
+  0%  { r:32px; opacity:0.8; }
+  100%{ r:48px; opacity:0; }
+}
+
+/* ── STAGE CARD (hidden by default, appears on click) ── */
+.scard {
+  position:absolute;
+  width:230px;
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 12px 40px rgba(0,0,0,0.18);
+
+  /* Hidden state */
+  opacity:0;
+  pointer-events:none;
+  transform:scale(0.88) translateY(8px);
+  z-index:20;
+  transition:
+    opacity 0.35s cubic-bezier(0.4,0,0.2,1),
+    transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* Visible state */
+.scard.visible {
+  opacity:1;
+  pointer-events:all;
+  transform:scale(1) translateY(0);
+}
+
+/* Close button */
+.scard-close {
+  position:absolute; top:9px; right:9px; z-index:10;
+  width:24px; height:24px; border-radius:50%;
+  background:rgba(0,0,0,0.3); backdrop-filter:blur(6px);
+  border:1.5px solid rgba(255,255,255,0.4);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:#fff; font-size:13px; line-height:1;
+  transition:background 0.2s;
+}
+.scard-close:hover { background:rgba(0,0,0,0.55); }
+
+/* Photo */
+.scard-photo { width:100%; height:110px; object-fit:cover; display:block; filter:brightness(0.88) saturate(1.1); }
+.scard-photo-overlay {
+  position:absolute; top:0; left:0; right:0; height:113px;
+  pointer-events:none;
+}
+
+/* Number badge */
+.scard-num {
+  position:absolute; top:10px; left:11px; z-index:3;
+  width:34px; height:34px; border-radius:9px;
+  background:rgba(0,0,0,0.32); backdrop-filter:blur(6px);
+  border:1.5px solid rgba(255,255,255,0.45);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif; font-size:12px; font-weight:800; color:#fff;
+}
+
+/* Body */
+.scard-body { padding:14px 15px 16px; }
+.scard-title { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; color:#fff; letter-spacing:-0.02em; margin-bottom:5px; }
+.scard-sum { font-size:10.5px; color:rgba(255,255,255,0.82); line-height:1.5; margin-bottom:10px; }
+
+.scard-bullets { list-style:none; }
+.scard-bullets li { display:flex; align-items:flex-start; gap:6px; font-size:10.5px; color:rgba(255,255,255,0.92); line-height:1.4; padding:2.5px 0; }
+.scard-bullets li::before { content:''; flex-shrink:0; width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.6); margin-top:5px; }
+
+/* Tabs */
+.scard-tabs { display:flex; gap:4px; margin:10px 0 8px; }
+.sctab {
+  padding:4px 9px; border-radius:6px; font-size:9.5px; font-weight:600;
+  letter-spacing:0.05em; text-transform:uppercase;
+  background:rgba(255,255,255,0.14); border:none; cursor:pointer;
+  color:rgba(255,255,255,0.65); transition:all 0.18s;
+}
+.sctab:hover { background:rgba(255,255,255,0.22); }
+.sctab.active { background:rgba(255,255,255,0.32); color:#fff; }
+
+.sctab-c { display:none; }
+.sctab-c.active { display:block; animation:tfin 0.22s ease; }
+@keyframes tfin { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+/* Flow mini */
+.mflow { display:flex; align-items:center; gap:4px; flex-wrap:wrap; justify-content:center; margin-top:2px; }
+.mfn { padding:4px 7px; border-radius:5px; font-size:9px; font-weight:700; color:#fff; background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.32); white-space:nowrap; }
+.mfa { color:rgba(255,255,255,0.5); font-size:12px; }
+
+/* KPI mini */
+.kpim { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.km { padding:8px; border-radius:7px; background:rgba(255,255,255,0.15); text-align:center; }
+.km-v { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; color:#fff; }
+.km-l { font-size:8.5px; color:rgba(255,255,255,0.65); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px; }
+
+/* Divider inside card */
+.scard-divider { height:1px; background:rgba(255,255,255,0.18); margin:2px 0 10px; }
+
+/* ── RESULTS ── */
+.results-section {
+  position:relative; z-index:10;
+  max-width:960px; margin:50px auto 0; padding:0 24px 80px;
+}
+.rt { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:#0D1B3E; text-align:center; margin-bottom:7px; letter-spacing:-0.02em; }
+.rs { text-align:center; color:#6B7A99; font-size:13px; margin-bottom:26px; }
+.rg { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:13px; }
+.rc {
+  padding:22px 18px; border-radius:16px;
+  border:1.5px solid rgba(255,255,255,0.85);
+  background:rgba(255,255,255,0.72); backdrop-filter:blur(16px);
+  text-align:center; box-shadow:0 4px 18px rgba(74,111,245,0.07);
+  transition:transform 0.3s, box-shadow 0.3s;
+}
+.rc:hover { transform:translateY(-4px); box-shadow:0 12px 28px rgba(74,111,245,0.14); }
+.ri { font-size:24px; margin-bottom:8px; }
+.rn { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:#0D1B3E; }
+.rl { font-size:11px; color:#6B7A99; margin-top:4px; line-height:1.4; }
+
+footer { position:relative; z-index:10; text-align:center; padding:28px 24px; color:#8B95A8; font-size:12px; border-top:1px solid rgba(0,0,0,0.06); }
+.footer-impact {
+  display:inline-flex; align-items:center; gap:8px;
+  margin-top:10px;
+  background:rgba(255,255,255,0.7);
+  border:1px solid rgba(74,111,245,0.18);
+  border-radius:100px; padding:6px 16px 6px 12px;
+  font-size:12px; color:#4A4A6A;
+  backdrop-filter:blur(8px);
+}
+.footer-impact .astar {
+  font-family:'Syne',sans-serif; font-weight:800; font-size:13px;
+  background: linear-gradient(135deg, #4A6FF5, #B44FFF);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.footer-impact .impact-dot {
+  width:5px; height:5px; border-radius:50%;
+  background:linear-gradient(135deg,#4A6FF5,#B44FFF); flex-shrink:0;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-badge"><span class="badge-dot"></span>AI Frontline Lab · Team Journey</div>
+  <h1>The Road to<br><span>AI-Powered Delivery</span></h1>
+  <p class="header-slogan">Because Your Impact Matters</p>
+  <p class="header-sub">6 stages from first AI experiment to a fully measurable, autonomous team workflow.</p>
+  <div class="click-hint">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#4A6FF5" stroke-width="1.5"/><path d="M7 4v3l2 1.5" stroke="#4A6FF5" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Click any stage on the road to explore
+  </div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas-wrap">
+<div class="canvas-area" id="canvas">
+
+<!-- SVG: road + connectors + nodes -->
+<svg class="road-svg" viewBox="0 0 1260 960" preserveAspectRatio="xMidYMid meet">
+
+  <!-- ROAD -->
+  <path class="rd-shd" d="M 610 920 C 570 860 430 835 360 765 C 290 695 400 635 452 568 C 504 501 562 480 592 416 C 622 352 582 292 646 244 C 710 196 822 212 870 162 C 912 118 900 68 900 22"/>
+  <path class="rd-bod"  d="M 610 920 C 570 860 430 835 360 765 C 290 695 400 635 452 568 C 504 501 562 480 592 416 C 622 352 582 292 646 244 C 710 196 822 212 870 162 C 912 118 900 68 900 22"/>
+  <path class="rd-ctr"  d="M 610 920 C 570 860 430 835 360 765 C 290 695 400 635 452 568 C 504 501 562 480 592 416 C 622 352 582 292 646 244 C 710 196 822 212 870 162 C 912 118 900 68 900 22"/>
+
+  <!-- CONNECTOR LINES (hidden by default, shown when node active) -->
+  <!-- S1: node(610,920) → card right at (760,870) -->
+  <line id="conn1" class="conn" stroke="#E84A26" x1="610" y1="920" x2="756" y2="878"/>
+  <!-- S2: node(360,765) → card right edge at (235,700) -->
+  <line id="conn2" class="conn" stroke="#D4890A" x1="330" y1="755" x2="242" y2="710"/>
+  <!-- S3: node(452,568) → card left at (240,516) -->
+  <line id="conn3" class="conn" stroke="#1DA870" x1="452" y1="568" x2="244" y2="516"/>
+  <!-- S4: node(592,416) → card right at (775,384) -->
+  <line id="conn4" class="conn" stroke="#00A0BC" x1="592" y1="416" x2="772" y2="382"/>
+  <!-- S5: node(680,252) → card right at (852,222) -->
+  <line id="conn5" class="conn" stroke="#3050CC" x1="680" y1="252" x2="848" y2="220"/>
+  <!-- S6: node(870,162) → card left at (648,110) -->
+  <line id="conn6" class="conn" stroke="#8B32CC" x1="870" y1="162" x2="648" y2="108"/>
+
+  <!-- ── ROAD NODES ── -->
+
+  <!-- Stage 1 -->
+  <g class="rnode clickable" id="rn1" onclick="openCard(1)">
+    <circle class="pulse-ring" cx="610" cy="920" r="32" stroke="#E84A26"/>
+    <circle cx="610" cy="920" r="30" fill="#E84A26" filter="drop-shadow(0 4px 12px rgba(232,74,38,0.55))"/>
+    <circle cx="610" cy="920" r="22" fill="#FF6848"/>
+    <text x="610" y="915" style="font-family:Syne,sans-serif;font-size:11px;font-weight:800;fill:#fff;text-anchor:middle;dominant-baseline:middle">01</text>
+    <text x="610" y="928" style="font-family:Inter,sans-serif;font-size:7px;font-weight:700;fill:rgba(255,255,255,0.92);text-anchor:middle;letter-spacing:0.04em">INTRO AI</text>
+  </g>
+
+  <!-- Stage 2 -->
+  <g class="rnode clickable" id="rn2" onclick="openCard(2)">
+    <circle class="pulse-ring" cx="360" cy="765" r="32" stroke="#D4890A"/>
+    <circle cx="360" cy="765" r="30" fill="#D4890A" filter="drop-shadow(0 4px 12px rgba(212,137,10,0.55))"/>
+    <circle cx="360" cy="765" r="22" fill="#FFA020"/>
+    <text x="360" y="760" style="font-family:Syne,sans-serif;font-size:11px;font-weight:800;fill:#fff;text-anchor:middle;dominant-baseline:middle">02</text>
+    <text x="360" y="773" style="font-family:Inter,sans-serif;font-size:7px;font-weight:700;fill:rgba(255,255,255,0.92);text-anchor:middle;letter-spacing:0.04em">FREESTYLE</text>
+  </g>
+
+  <!-- Stage 3 -->
+  <g class="rnode clickable" id="rn3" onclick="openCard(3)">
+    <circle class="pulse-ring" cx="452" cy="568" r="32" stroke="#1DA870"/>
+    <circle cx="452" cy="568" r="30" fill="#1DA870" filter="drop-shadow(0 4px 12px rgba(29,168,112,0.55))"/>
+    <circle cx="452" cy="568" r="22" fill="#2ED48A"/>
+    <text x="452" y="563" style="font-family:Syne,sans-serif;font-size:11px;font-weight:800;fill:#fff;text-anchor:middle;dominant-baseline:middle">03</text>
+    <text x="452" y="576" style="font-family:Inter,sans-serif;font-size:7px;font-weight:700;fill:rgba(255,255,255,0.92);text-anchor:middle;letter-spacing:0.04em">ORDER</text>
+  </g>
+
+  <!-- Stage 4 -->
+  <g class="rnode clickable" id="rn4" onclick="openCard(4)">
+    <circle class="pulse-ring" cx="592" cy="416" r="32" stroke="#00A0BC"/>
+    <circle cx="592" cy="416" r="30" fill="#00A0BC" filter="drop-shadow(0 4px 12px rgba(0,160,188,0.55))"/>
+    <circle cx="592" cy="416" r="22" fill="#14BDD8"/>
+    <text x="592" y="411" style="font-family:Syne,sans-serif;font-size:11px;font-weight:800;fill:#fff;text-anchor:middle;dominant-baseline:middle">04</text>
+    <text x="592" y="424" style="font-family:Inter,sans-serif;font-size:7px;font-weight:700;fill:rgba(255,255,255,0.92);text-anchor:middle;letter-spacing:0.04em">IMPROVE</text>
+  </g>
+
+  <!-- Stage 5 -->
+  <g class="rnode clickable" id="rn5" onclick="openCard(5)">
+    <circle class="pulse-ring" cx="680" cy="252" r="32" stroke="#3050CC"/>
+    <circle cx="680" cy="252" r="30" fill="#3050CC" filter="drop-shadow(0 4px 12px rgba(48,80,204,0.55))"/>
+    <circle cx="680" cy="252" r="22" fill="#5070E8"/>
+    <text x="680" y="247" style="font-family:Syne,sans-serif;font-size:11px;font-weight:800;fill:#fff;text-anchor:middle;dominant-baseline:middle">05</text>
+    <text x="680" y="260" style="font-family:Inter,sans-serif;font-size:7px;font-weight:700;fill:rgba(255,255,255,0.92);text-anchor:middle;letter-spacing:0.04em">TRACKING</text>
+  </g>
+
+  <!-- Stage 6 -->
+  <g class="rnode clickable" id="rn6" onclick="openCard(6)">
+    <circle class="pulse-ring" cx="870" cy="162" r="32" stroke="#8B32CC"/>
+    <circle cx="870" cy="162" r="30" fill="#8B32CC" filter="drop-shadow(0 4px 12px rgba(139,50,204,0.55))"/>
+    <circle cx="870" cy="162" r="22" fill="#A84EE8"/>
+    <text x="870" y="157" style="font-family:Syne,sans-serif;font-size:11px;font-weight:800;fill:#fff;text-anchor:middle;dominant-baseline:middle">06</text>
+    <text x="870" y="170" style="font-family:Inter,sans-serif;font-size:7px;font-weight:700;fill:rgba(255,255,255,0.92);text-anchor:middle;letter-spacing:0.04em">COLLAB</text>
+  </g>
+
+</svg>
+
+<!-- ══════════════════════════════════════
+     STAGE CARDS (hidden by default)
+     All positioned near their connector endpoint
+     ══════════════════════════════════════ -->
+
+<!-- Card 1 — bottom right of node -->
+<div class="scard" id="sc1" style="bottom:42px; left:754px;">
+  <img class="scard-photo" src="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=400&q=80" alt="">
+  <div class="scard-photo-overlay" style="background:linear-gradient(to bottom,rgba(0,0,0,0.04),#E84A26)"></div>
+  <div class="scard-num">01</div>
+  <div class="scard-close" onclick="closeCard(event,1)">✕</div>
+  <div class="scard-body" style="background:#E84A26">
+    <div class="scard-title">Introduction of AI</div>
+    <div class="scard-sum">First exposure to Claude. High energy, quick wins — "anything feels possible."</div>
+    <div class="scard-divider"></div>
+    <div class="scard-tabs">
+      <button class="sctab active" onclick="stab(event,'s1a')">Overview</button>
+      <button class="sctab" onclick="stab(event,'s1b')">Stats</button>
+    </div>
+    <div class="sctab-c active" id="s1a">
+      <ul class="scard-bullets">
+        <li>First exposure to AI tools like Claude</li>
+        <li>Quick wins in code generation</li>
+        <li>Curiosity &amp; experimentation phase</li>
+        <li>High morale — individual exploration</li>
+        <li>No shared structure yet</li>
+      </ul>
+    </div>
+    <div class="sctab-c" id="s1b">
+      <div class="kpim">
+        <div class="km"><div class="km-v">↑89%</div><div class="km-l">Enthusiasm</div></div>
+        <div class="km"><div class="km-v">~2h</div><div class="km-l">First Win</div></div>
+        <div class="km"><div class="km-v">Ad-hoc</div><div class="km-l">Process</div></div>
+        <div class="km"><div class="km-v">None</div><div class="km-l">Standards</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2 — left of node, properly inset -->
+<div class="scard" id="sc2" style="top:596px; left:14px;">
+  <img class="scard-photo" src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80" alt="">
+  <div class="scard-photo-overlay" style="background:linear-gradient(to bottom,rgba(0,0,0,0.04),#D4890A)"></div>
+  <div class="scard-num">02</div>
+  <div class="scard-close" onclick="closeCard(event,2)">✕</div>
+  <div class="scard-body" style="background:#D4890A">
+    <div class="scard-title">Freestyling</div>
+    <div class="scard-sum">Uneven adoption, everyone works differently. No shared standards or KPIs.</div>
+    <div class="scard-divider"></div>
+    <div class="scard-tabs">
+      <button class="sctab active" onclick="stab(event,'s2a')">Gaps</button>
+      <button class="sctab" onclick="stab(event,'s2b')">Impact</button>
+    </div>
+    <div class="sctab-c active" id="s2a">
+      <ul class="scard-bullets">
+        <li>Everyone works differently — no shared approach</li>
+        <li>Different AI maturity levels across team</li>
+        <li>Focus on coding only, not full process</li>
+        <li>No shared standards or KPI visibility</li>
+        <li>"Pockets of adoption" with bottlenecks</li>
+      </ul>
+    </div>
+    <div class="sctab-c" id="s2b">
+      <ul class="scard-bullets">
+        <li>Duplicate effort on identical problems</li>
+        <li>Massive unexplored opportunity</li>
+        <li>Testing &amp; docs still 100% manual</li>
+        <li>Knowledge locked in individual prompts</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Card 3 — left of node -->
+<div class="scard" id="sc3" style="top:416px; left:12px;">
+  <img class="scard-photo" src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&q=80" alt="">
+  <div class="scard-photo-overlay" style="background:linear-gradient(to bottom,rgba(0,0,0,0.04),#1DA870)"></div>
+  <div class="scard-num">03</div>
+  <div class="scard-close" onclick="closeCard(event,3)">✕</div>
+  <div class="scard-body" style="background:#1DA870">
+    <div class="scard-title">Order</div>
+    <div class="scard-sum">Shift from chaos to structured, end-to-end delivery thinking.</div>
+    <div class="scard-divider"></div>
+    <div class="scard-tabs">
+      <button class="sctab active" onclick="stab(event,'s3a')">Flow</button>
+      <button class="sctab" onclick="stab(event,'s3b')">Details</button>
+    </div>
+    <div class="sctab-c active" id="s3a">
+      <div class="mflow">
+        <div class="mfn">🌀 Chaos</div><span class="mfa">→</span>
+        <div class="mfn">📋 Define</div><span class="mfa">→</span>
+        <div class="mfn">✅ Gates</div><span class="mfa">→</span>
+        <div class="mfn">🏗️ Structure</div>
+      </div>
+    </div>
+    <div class="sctab-c" id="s3b">
+      <ul class="scard-bullets">
+        <li>Optimize the full delivery chain</li>
+        <li>Define processes across all stages</li>
+        <li>Introduce shared AI workflow standards</li>
+        <li>Establish approval gates</li>
+        <li>Create initial KPIs &amp; baselines</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Card 4 — right of node -->
+<div class="scard" id="sc4" style="top:290px; left:770px;">
+  <img class="scard-photo" src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80" alt="">
+  <div class="scard-photo-overlay" style="background:linear-gradient(to bottom,rgba(0,0,0,0.04),#00A0BC)"></div>
+  <div class="scard-num">04</div>
+  <div class="scard-close" onclick="closeCard(event,4)">✕</div>
+  <div class="scard-body" style="background:#00A0BC">
+    <div class="scard-title">Improvement</div>
+    <div class="scard-sum">Full AI agent workflow with human gates and continuous improvement loops.</div>
+    <div class="scard-divider"></div>
+    <div class="scard-tabs">
+      <button class="sctab active" onclick="stab(event,'s4a')">Agents</button>
+      <button class="sctab" onclick="stab(event,'s4b')">Workflow</button>
+    </div>
+    <div class="sctab-c active" id="s4a">
+      <ul class="scard-bullets">
+        <li>📋 Requirements Agent</li>
+        <li>🗺️ Planning Agent</li>
+        <li>💻 Coding Agent</li>
+        <li>🧪 Testing Agent</li>
+        <li>📄 Documentation Agent</li>
+      </ul>
+    </div>
+    <div class="sctab-c" id="s4b">
+      <div class="mflow" style="flex-direction:column;gap:4px;align-items:center">
+        <div class="mfn">Requirements → Planning</div>
+        <span class="mfa">↓ 👤 Human Gate</span>
+        <div class="mfn">Coding → Testing ↺</div>
+        <span class="mfa">↓</span>
+        <div class="mfn">Docs → Done ✅</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 5 — right of node -->
+<div class="scard" id="sc5" style="top:148px; left:846px;">
+  <img class="scard-photo" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&q=80" alt="">
+  <div class="scard-photo-overlay" style="background:linear-gradient(to bottom,rgba(0,0,0,0.04),#3050CC)"></div>
+  <div class="scard-num">05</div>
+  <div class="scard-close" onclick="closeCard(event,5)">✕</div>
+  <div class="scard-body" style="background:#3050CC">
+    <div class="scard-title">Tracking</div>
+    <div class="scard-sum">KPI dashboards, Jira integration, and data-driven optimization across the team.</div>
+    <div class="scard-divider"></div>
+    <div class="scard-tabs">
+      <button class="sctab active" onclick="stab(event,'s5a')">Overview</button>
+      <button class="sctab" onclick="stab(event,'s5b')">KPIs</button>
+    </div>
+    <div class="sctab-c active" id="s5a">
+      <ul class="scard-bullets">
+        <li>KPI dashboards across full pipeline</li>
+        <li>Ticket tracking integrated with Jira</li>
+        <li>Cycle time &amp; lead time measured daily</li>
+        <li>Adoption tracking across all members</li>
+        <li>Data-driven optimization replaces gut-feel</li>
+      </ul>
+    </div>
+    <div class="sctab-c" id="s5b">
+      <div class="kpim">
+        <div class="km"><div class="km-v">↓40%</div><div class="km-l">Cycle Time</div></div>
+        <div class="km"><div class="km-v">↑3×</div><div class="km-l">Throughput</div></div>
+        <div class="km"><div class="km-v">↓60%</div><div class="km-l">Lead Time</div></div>
+        <div class="km"><div class="km-v">95%</div><div class="km-l">Adoption</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 6 — left of node (top area) -->
+<div class="scard" id="sc6" style="top:38px; left:406px;">
+  <img class="scard-photo" src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&q=80" alt="">
+  <div class="scard-photo-overlay" style="background:linear-gradient(to bottom,rgba(0,0,0,0.04),#8B32CC)"></div>
+  <div class="scard-num">06</div>
+  <div class="scard-close" onclick="closeCard(event,6)">✕</div>
+  <div class="scard-body" style="background:#8B32CC">
+    <div class="scard-title">Collaboration</div>
+    <div class="scard-sum">Shared GitHub marketplace, cross-team workflows, community-driven growth.</div>
+    <div class="scard-divider"></div>
+    <div class="scard-tabs">
+      <button class="sctab active" onclick="stab(event,'s6a')">Overview</button>
+      <button class="sctab" onclick="stab(event,'s6b')">Ecosystem</button>
+    </div>
+    <div class="sctab-c active" id="s6a">
+      <ul class="scard-bullets">
+        <li>Cross-team AI workflow collaboration</li>
+        <li>Shared GitHub marketplace for components</li>
+        <li>Community-driven improvements &amp; reviews</li>
+        <li>Structured knowledge sharing sessions</li>
+        <li>Scalable AI workflows adopted org-wide</li>
+      </ul>
+    </div>
+    <div class="sctab-c" id="s6b">
+      <div class="mflow" style="flex-direction:column;gap:4px;align-items:center">
+        <div class="mfn">🔬 Lab Team → 📦 GitHub Marketplace</div>
+        <span class="mfa">↓</span>
+        <div class="mfn">👥 Other Teams → ♻️ Shared Growth</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /canvas-area -->
+</div><!-- /canvas-wrap -->
+
+<!-- RESULTS -->
+<section class="results-section">
+  <div class="rt">Measurable Outcomes</div>
+  <div class="rs">What the AI Frontline Lab delivered in practice</div>
+  <div class="rg">
+    <div class="rc"><div class="ri">⚡</div><div class="rn">30</div><div class="rl">Tickets in 2 weeks — a new team record</div></div>
+    <div class="rc"><div class="ri">🎯</div><div class="rn">100%</div><div class="rl">Consistent quality via embedded standards</div></div>
+    <div class="rc"><div class="ri">🚀</div><div class="rn">6×</div><div class="rl">Faster delivery end-to-end</div></div>
+    <div class="rc"><div class="ri">⚙️</div><div class="rn">∥</div><div class="rl">Parallel workstreams enabled</div></div>
+    <div class="rc"><div class="ri">📈</div><div class="rn">∞</div><div class="rl">Continuous improvement loop built in</div></div>
+  </div>
+</section>
+
+<footer>
+  <strong>AI Frontline Lab</strong> · Internal Innovation Program · Built with structured AI workflows
+  <br>
+  <div class="footer-impact">
+    <span class="impact-dot"></span>
+    An <span class="astar">A*Impact</span> Story &nbsp;·&nbsp; Because Your Impact Matters
+  </div>
+</footer>
+
+<script>
+let activeId = null;
+
+function openCard(id) {
+  // If clicking the already-open card's node, close it
+  if (activeId === id) {
+    closeAll();
+    return;
+  }
+
+  // Close any currently open card first
+  closeAll(false);
+
+  // Small delay so close animation plays before open
+  setTimeout(() => {
+    const card = document.getElementById('sc' + id);
+    const conn = document.getElementById('conn' + id);
+    const node = document.getElementById('rn' + id);
+
+    card.classList.add('visible');
+    conn.classList.add('visible');
+    node.classList.add('active');
+    activeId = id;
+  }, activeId ? 120 : 0);
+}
+
+function closeCard(e, id) {
+  e.stopPropagation();
+  const card = document.getElementById('sc' + id);
+  const conn = document.getElementById('conn' + id);
+  const node = document.getElementById('rn' + id);
+  card.classList.remove('visible');
+  conn.classList.remove('visible');
+  node.classList.remove('active');
+  activeId = null;
+}
+
+function closeAll(resetActive = true) {
+  document.querySelectorAll('.scard').forEach(c => c.classList.remove('visible'));
+  document.querySelectorAll('.conn').forEach(c => c.classList.remove('visible'));
+  document.querySelectorAll('.rnode').forEach(n => n.classList.remove('active'));
+  if (resetActive) activeId = null;
+}
+
+function stab(e, tabId) {
+  e.stopPropagation();
+  const body = e.target.closest('.scard-body');
+  body.querySelectorAll('.sctab').forEach(b => b.classList.remove('active'));
+  body.querySelectorAll('.sctab-c').forEach(c => c.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+// Close on canvas background click
+document.getElementById('canvas').addEventListener('click', function(e) {
+  if (!e.target.closest('.scard') && !e.target.closest('.rnode')) {
+    closeAll();
+  }
+});
+
+// Responsive scaling
+function scaleCanvas() {
+  const canvas = document.getElementById('canvas');
+  const wrap = canvas.parentElement;
+  const available = wrap.clientWidth - 48;
+  const natural = 1260;
+  if (available < natural) {
+    const s = Math.max(available / natural, 0.38);
+    canvas.style.transform = `scale(${s})`;
+    canvas.style.transformOrigin = 'top center';
+    canvas.style.marginLeft = `${(available - natural) / 2}px`;
+    wrap.style.height = `${960 * s + 30}px`;
+  } else {
+    canvas.style.transform = '';
+    canvas.style.marginLeft = 'auto';
+    wrap.style.height = '';
+  }
+}
+window.addEventListener('resize', scaleCanvas);
+scaleCanvas();
+</script>
+</body>
+</html>
