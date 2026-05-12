@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impact Reaction Banner</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  /* ---------- BANNER SHELL ---------- */
+  .banner {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    height: 520px;
+    border-radius: 24px;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 30%, rgba(120, 40, 200, 0.85) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 70% at 80% 70%, rgba(40, 80, 230, 0.85) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255, 60, 180, 0.4) 0%, transparent 60%),
+      linear-gradient(135deg, #1a0533 0%, #2a0a5e 30%, #1e1b6e 60%, #2d0a4e 100%);
+    box-shadow:
+      0 30px 80px -20px rgba(120, 40, 200, 0.5),
+      0 20px 50px -10px rgba(40, 80, 230, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+      0 0 60px rgba(180, 80, 255, 0.15) inset;
+  }
+
+  /* Animated gradient sweep layer */
+  .banner::before {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(255, 100, 220, 0.35) 0%, transparent 35%),
+      radial-gradient(circle at 70% 60%, rgba(80, 180, 255, 0.35) 0%, transparent 35%),
+      radial-gradient(circle at 50% 50%, rgba(190, 100, 255, 0.25) 0%, transparent 40%);
+    animation: drift 18s ease-in-out infinite alternate;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(20px);
+  }
+
+  /* Light sweep across surface */
+  .banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.06) 45%,
+      rgba(255, 200, 255, 0.12) 50%,
+      rgba(255, 255, 255, 0.06) 55%,
+      transparent 70%
+    );
+    background-size: 250% 100%;
+    animation: sweep 9s linear infinite;
+    z-index: 1;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+
+  @keyframes drift {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(-3%, 2%) scale(1.08); }
+    100% { transform: translate(2%, -3%) scale(1.05); }
+  }
+
+  @keyframes sweep {
+    0%   { background-position: -100% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* ---------- GRID OVERLAY ---------- */
+  .grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 95%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 95%);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* ---------- NOISE TEXTURE ---------- */
+  .noise {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    opacity: 0.35;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+  }
+
+  /* ---------- GLOWING EDGE ---------- */
+  .edge-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    pointer-events: none;
+    z-index: 4;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+      inset 0 0 30px rgba(255, 100, 220, 0.15),
+      inset 0 0 60px rgba(80, 100, 255, 0.1);
+  }
+
+  /* ---------- CONTENT LAYOUT ---------- */
+  .content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    align-items: center;
+    justify-items: center;
+    padding: 36px 28px;
+    gap: 20px;
+    text-align: center;
+  }
+
+  /* Left label */
+  .label-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    justify-self: center;
+  }
+
+  .label-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    width: fit-content;
+  }
+
+  .label-tag::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .label-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-shadow: 0 2px 20px rgba(180, 100, 255, 0.4);
+  }
+
+  .label-sub {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.65);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- HERO FIRE EMOJI ---------- */
+  .fire-stage {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: center;
+  }
+
+  /* Outermost ambient ring */
+  .ring-outer {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, rgba(255, 100, 220, 0.25) 0%, rgba(180, 80, 255, 0.15) 40%, transparent 70%);
+    filter: blur(20px);
+    animation: breathe 4s ease-in-out infinite;
+  }
+
+  .ring-mid {
+    position: absolute;
+    inset: 24px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, rgba(255, 150, 80, 0.35) 0%, rgba(255, 80, 180, 0.25) 50%, transparent 75%);
+    filter: blur(12px);
+    animation: breathe 4s ease-in-out infinite reverse;
+  }
+
+  .ring-inner {
+    position: absolute;
+    inset: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 200, 100, 0.45) 0%, transparent 70%);
+    filter: blur(8px);
+    animation: breathe 3s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+
+  /* Decorative concentric stroke rings */
+  .stroke-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+  }
+  .stroke-ring.r1 { inset: 12px; }
+  .stroke-ring.r2 { inset: 34px; border-color: rgba(255, 180, 230, 0.12); }
+
+  /* The fire button */
+  .fire {
+    position: relative;
+    z-index: 5;
+    font-size: 90px;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    background: none;
+    border: none;
+    padding: 0;
+    filter: drop-shadow(0 0 18px rgba(255, 140, 50, 0.7)) drop-shadow(0 0 30px rgba(255, 80, 180, 0.4));
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.35s ease;
+    transform-origin: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .fire:hover {
+    transform: scale(1.18);
+    filter:
+      drop-shadow(0 0 25px rgba(255, 160, 60, 0.95))
+      drop-shadow(0 0 45px rgba(255, 80, 200, 0.75))
+      drop-shadow(0 0 70px rgba(80, 150, 255, 0.5));
+    animation: hue-shift 2.5s linear infinite;
+  }
+
+  @keyframes hue-shift {
+    0%   { filter: drop-shadow(0 0 25px rgba(255, 160, 60, 0.95)) drop-shadow(0 0 45px rgba(255, 80, 200, 0.75)) drop-shadow(0 0 70px rgba(80, 150, 255, 0.5)); }
+    33%  { filter: drop-shadow(0 0 25px rgba(255, 80, 200, 0.95)) drop-shadow(0 0 45px rgba(80, 150, 255, 0.75)) drop-shadow(0 0 70px rgba(255, 160, 60, 0.5)); }
+    66%  { filter: drop-shadow(0 0 25px rgba(80, 150, 255, 0.95)) drop-shadow(0 0 45px rgba(255, 160, 60, 0.75)) drop-shadow(0 0 70px rgba(255, 80, 200, 0.5)); }
+    100% { filter: drop-shadow(0 0 25px rgba(255, 160, 60, 0.95)) drop-shadow(0 0 45px rgba(255, 80, 200, 0.75)) drop-shadow(0 0 70px rgba(80, 150, 255, 0.5)); }
+  }
+
+  .fire:active {
+    transform: scale(1.05);
+    transition: transform 0.08s ease-out;
+  }
+
+  /* ---------- COUNTER ---------- */
+  .counter-block {
+    justify-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .counter-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .counter-card {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 14px 24px;
+    border-radius: 16px;
+    background: rgba(10, 0, 30, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 0 0 1px rgba(255, 100, 220, 0.1) inset,
+      0 8px 24px rgba(0, 0, 0, 0.3),
+      0 0 30px rgba(180, 80, 255, 0.15);
+    transition: box-shadow 0.4s ease, transform 0.3s ease;
+  }
+
+  .counter-card.pulse {
+    animation: counter-pulse 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes counter-pulse {
+    0%   { transform: scale(1); box-shadow: 0 0 0 1px rgba(255, 100, 220, 0.1) inset, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 30px rgba(180, 80, 255, 0.15); }
+    40%  { transform: scale(1.12); box-shadow: 0 0 0 1px rgba(255, 180, 255, 0.5) inset, 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 60px rgba(255, 100, 220, 0.6); }
+    100% { transform: scale(1); box-shadow: 0 0 0 1px rgba(255, 100, 220, 0.1) inset, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 30px rgba(180, 80, 255, 0.15); }
+  }
+
+  .counter-num {
+    font-size: 34px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 18px rgba(255, 150, 230, 0.5);
+    min-width: 1.5ch;
+    text-align: right;
+  }
+
+  .counter-unit {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.05em;
+  }
+
+  /* ---------- BURST / PARTICLES ---------- */
+  .burst {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: radial-gradient(circle,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 200, 100, 0.7) 25%,
+      rgba(255, 100, 200, 0.5) 50%,
+      rgba(120, 100, 255, 0.3) 75%,
+      transparent 100%);
+    pointer-events: none;
+    z-index: 4;
+    mix-blend-mode: screen;
+  }
+
+  .burst.go {
+    animation: burst-expand 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes burst-expand {
+    0%   { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    40%  { opacity: 0.95; }
+    100% { transform: translate(-50%, -50%) scale(9); opacity: 0; }
+  }
+
+  /* Banner flash overlay on click */
+  .flash {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 200, 255, 0.2) 30%,
+      transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+    mix-blend-mode: screen;
+  }
+
+  .flash.go {
+    animation: flash-bright 0.7s ease-out;
+  }
+
+  @keyframes flash-bright {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .banner.pulsing {
+    animation: banner-pulse 0.7s ease-out;
+  }
+
+  @keyframes banner-pulse {
+    0%, 100% {
+      box-shadow:
+        0 30px 80px -20px rgba(120, 40, 200, 0.5),
+        0 20px 50px -10px rgba(40, 80, 230, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+        0 0 60px rgba(180, 80, 255, 0.15) inset;
+    }
+    40% {
+      box-shadow:
+        0 30px 100px -20px rgba(255, 100, 220, 0.7),
+        0 20px 70px -10px rgba(80, 150, 255, 0.6),
+        0 0 0 1px rgba(255, 200, 255, 0.4) inset,
+        0 0 120px rgba(255, 150, 240, 0.5) inset;
+    }
+  }
+
+  /* Sparks */
+  .spark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 6;
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+  }
+
+  /* Floating +1 */
+  .plus-one {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    pointer-events: none;
+    z-index: 7;
+    transform: translate(-50%, -50%);
+    text-shadow:
+      0 0 12px rgba(255, 200, 255, 0.9),
+      0 0 24px rgba(255, 100, 220, 0.7),
+      0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.02em;
+  }
+
+  .plus-one.go {
+    animation: plus-rise 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes plus-rise {
+    0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    20%  { transform: translate(-50%, -90%) scale(1.15); opacity: 1; }
+    100% { transform: translate(-50%, -200%) scale(0.9); opacity: 0; }
+  }
+
+  /* ---------- ADMIN RESET CONFIRMATION ---------- */
+  .reset-toast {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    z-index: 20;
+    padding: 14px 24px;
+    border-radius: 14px;
+    background: rgba(10, 0, 30, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow:
+      0 0 0 1px rgba(180, 220, 255, 0.2) inset,
+      0 10px 40px rgba(0, 0, 0, 0.5),
+      0 0 60px rgba(80, 200, 255, 0.3);
+  }
+
+  .reset-toast.go {
+    animation: toast-flash 2s ease-in-out forwards;
+  }
+
+  @keyframes toast-flash {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+    15%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    75%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  }
+
+  .reset-toast .check {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4ade80, #06b6d4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #0a0118;
+    font-weight: 800;
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.6);
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 400px) {
+    .banner { height: 480px; }
+    .fire-stage { width: 170px; height: 170px; }
+    .fire { font-size: 76px; }
+    .label-title { font-size: 21px; }
+    .counter-num { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="banner" id="banner">
+
+  <!-- decorative layers -->
+  <div class="grid"></div>
+  <div class="noise"></div>
+  <div class="edge-glow"></div>
+  <div class="flash" id="flash"></div>
+
+  <!-- main content -->
+  <div class="content">
+
+    <!-- left: label -->
+    <div class="label-block">
+      <span class="label-tag">AI Newsletter · Live</span>
+      <div class="label-title">React to this edition</div>
+      <div class="label-sub">Tap the flame to signal impact</div>
+    </div>
+
+    <!-- center: fire stage -->
+    <div class="fire-stage" id="fireStage">
+      <div class="ring-outer"></div>
+      <div class="ring-mid"></div>
+      <div class="ring-inner"></div>
+      <div class="stroke-ring r1"></div>
+      <div class="stroke-ring r2"></div>
+      <button class="fire" id="fire" aria-label="React with fire">🔥</button>
+    </div>
+
+    <!-- right: counter -->
+    <div class="counter-block">
+      <div class="counter-label">🔥 Impact</div>
+      <div class="counter-card" id="counterCard">
+        <span class="counter-num" id="counterNum">0</span>
+        <span class="counter-unit">reactions</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- reset toast -->
+  <div class="reset-toast" id="resetToast">
+    <span class="check">✓</span>
+    <span>Counter reset · System ready</span>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    const fire        = document.getElementById('fire');
+    const fireStage   = document.getElementById('fireStage');
+    const banner      = document.getElementById('banner');
+    const flash       = document.getElementById('flash');
+    const counterNum  = document.getElementById('counterNum');
+    const counterCard = document.getElementById('counterCard');
+    const resetToast  = document.getElementById('resetToast');
+
+    let count = 0;
+
+    /* ---------- Click reaction ---------- */
+    fire.addEventListener('click', function (e) {
+      count += 1;
+      updateCounter();
+      triggerBurst();
+      triggerFlash();
+      triggerBannerPulse();
+      spawnSparks();
+      spawnPlusOne();
+    });
+
+    function updateCounter() {
+      counterNum.textContent = count;
+      counterCard.classList.remove('pulse');
+      // force reflow so the animation restarts cleanly on rapid clicks
+      void counterCard.offsetWidth;
+      counterCard.classList.add('pulse');
+    }
+
+    function triggerBurst() {
+      const burst = document.createElement('div');
+      burst.className = 'burst go';
+      fireStage.appendChild(burst);
+      setTimeout(() => burst.remove(), 950);
+    }
+
+    function triggerFlash() {
+      flash.classList.remove('go');
+      void flash.offsetWidth;
+      flash.classList.add('go');
+    }
+
+    function triggerBannerPulse() {
+      banner.classList.remove('pulsing');
+      void banner.offsetWidth;
+      banner.classList.add('pulsing');
+      setTimeout(() => banner.classList.remove('pulsing'), 750);
+    }
+
+    /* ---------- Sparks ---------- */
+    const sparkColors = [
+      'rgba(255, 200, 100, 0.95)',
+      'rgba(255, 120, 200, 0.95)',
+      'rgba(180, 140, 255, 0.95)',
+      'rgba(120, 200, 255, 0.95)',
+      'rgba(255, 255, 255, 0.95)'
+    ];
+
+    function spawnSparks() {
+      const count = 14;
+      for (let i = 0; i < count; i++) {
+        const spark = document.createElement('div');
+        spark.className = 'spark';
+        const color = sparkColors[i % sparkColors.length];
+        spark.style.background = color;
+        spark.style.boxShadow = `0 0 8px ${color}, 0 0 16px ${color}`;
+
+        const angle = (Math.PI * 2 * i) / count + (Math.random() * 0.5 - 0.25);
+        const distance = 90 + Math.random() * 70;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+        const duration = 700 + Math.random() * 400;
+        const size = 4 + Math.random() * 5;
+
+        spark.style.width  = size + 'px';
+        spark.style.height = size + 'px';
+
+        fireStage.appendChild(spark);
+
+        // animate via Web Animations API for smoothness
+        spark.animate(
+          [
+            { transform: 'translate(-50%, -50%) translate(0, 0) scale(1)', opacity: 1 },
+            { transform: `translate(-50%, -50%) translate(${dx * 0.5}px, ${dy * 0.5}px) scale(1.1)`, opacity: 1, offset: 0.4 },
+            { transform: `translate(-50%, -50%) translate(${dx}px, ${dy}px) scale(0.3)`, opacity: 0 }
+          ],
+          {
+            duration: duration,
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            fill: 'forwards'
+          }
+        );
+
+        setTimeout(() => spark.remove(), duration + 50);
+      }
+    }
+
+    /* ---------- Floating +1 ---------- */
+    function spawnPlusOne() {
+      const p = document.createElement('div');
+      p.className = 'plus-one go';
+      p.textContent = '+1';
+      fireStage.appendChild(p);
+      setTimeout(() => p.remove(), 1150);
+    }
+
+    /* ---------- Admin reset: Shift+R then R within 2s ---------- */
+    let resetArmed = false;
+    let armTimeout = null;
+
+    document.addEventListener('keydown', function (e) {
+      // ignore when user is typing in an input/textarea
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return;
+
+      const key = (e.key || '').toLowerCase();
+      if (key !== 'r') return;
+
+      if (!resetArmed && e.shiftKey) {
+        // first press: Shift+R arms the reset
+        resetArmed = true;
+        clearTimeout(armTimeout);
+        armTimeout = setTimeout(() => { resetArmed = false; }, 2000);
+        e.preventDefault();
+      } else if (resetArmed && !e.shiftKey) {
+        // second press: plain R confirms the reset
+        resetArmed = false;
+        clearTimeout(armTimeout);
+        performReset();
+        e.preventDefault();
+      } else if (resetArmed && e.shiftKey) {
+        // Shift+R pressed again while armed — just re-arm
+        clearTimeout(armTimeout);
+        armTimeout = setTimeout(() => { resetArmed = false; }, 2000);
+        e.preventDefault();
+      }
+    });
+
+    function performReset() {
+      count = 0;
+      counterNum.textContent = '0';
+      counterCard.classList.remove('pulse');
+      void counterCard.offsetWidth;
+      counterCard.classList.add('pulse');
+
+      resetToast.classList.remove('go');
+      void resetToast.offsetWidth;
+      resetToast.classList.add('go');
+      setTimeout(() => resetToast.classList.remove('go'), 2050);
+    }
+  })();
+</script>
+
+</body>
+</html>
