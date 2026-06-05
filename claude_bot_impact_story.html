@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Impact Story — Claude Bot GitHub Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --az-navy:   #003781;
+    --az-blue:   #0070B9;
+    --az-sky:    #00A3C7;
+    --az-teal:   #1D9E75;
+    --az-red:    #C8001E;
+    --az-amber:  #BA7517;
+    --bg:        #F7F8FA;
+    --surface:   #FFFFFF;
+    --surface2:  #EEF2F7;
+    --border:    rgba(0,55,129,0.12);
+    --text:      #0D1B2E;
+    --muted:     #5B6880;
+    --radius:    14px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2.5rem 1rem 4rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: 0 2px 32px rgba(0,55,129,0.10), 0 0 0 0.5px var(--border);
+    width: 100%;
+    max-width: 780px;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  .card-header {
+    background: var(--az-navy);
+    padding: 2rem 2.25rem 1.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-header::after {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .eyebrow-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--az-sky);
+    display: inline-block;
+  }
+
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: #fff;
+    line-height: 1.3;
+    max-width: 560px;
+    margin-bottom: 1.25rem;
+  }
+
+  .allianz-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.10);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    border-radius: 30px;
+    padding: 5px 14px 5px 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+  }
+
+  .allianz-logo {
+    width: 22px; height: 22px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    color: var(--az-navy);
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 2.25rem;
+    background: var(--surface);
+    gap: 2px;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2.5px solid transparent;
+    padding: 14px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -0.5px;
+  }
+
+  .tab-btn i { font-size: 14px; }
+
+  .tab-btn.active {
+    color: var(--az-blue);
+    border-bottom-color: var(--az-blue);
+    font-weight: 500;
+  }
+
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  /* ── Panels ── */
+  .panels { padding: 2rem 2.25rem 2.25rem; }
+
+  .panel { display: none; animation: fadeIn 0.2s ease; }
+  .panel.visible { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Problem panel ── */
+  .problem-intro {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .problem-intro strong { color: var(--text); font-weight: 500; }
+
+  .prob-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+
+  .prob-card {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    border-left: 3px solid var(--az-red);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .prob-card.amber { border-left-color: var(--az-amber); }
+  .prob-card.gray  { border-left-color: #8899B0; }
+
+  .prob-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 40px;
+    color: var(--az-red);
+    line-height: 1;
+  }
+
+  .prob-card.amber .prob-num { color: var(--az-amber); font-size: 28px; padding-top: 6px; }
+  .prob-card.gray  .prob-num { color: #5B6880; font-size: 22px; padding-top: 4px; }
+
+  .prob-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .prob-sub {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── Solution panel ── */
+  .solution-intro {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .sol-card {
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+    cursor: pointer;
+  }
+
+  .sol-card:hover { box-shadow: 0 4px 16px rgba(0,55,129,0.08); }
+
+  .sol-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.25rem;
+    background: var(--surface);
+    gap: 12px;
+  }
+
+  .sol-head-left { display: flex; align-items: center; gap: 12px; }
+
+  .tier-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #E6F1FB;
+    color: #0C447C;
+    white-space: nowrap;
+  }
+
+  .sol-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    background: var(--az-navy);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .sol-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .sol-chevron {
+    font-size: 14px;
+    color: var(--muted);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .sol-chevron.open { transform: rotate(180deg); }
+
+  .sol-body {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.2s;
+    padding: 0 1.25rem;
+    border-top: 0 solid var(--border);
+    background: var(--surface2);
+  }
+
+  .sol-body.open {
+    max-height: 200px;
+    padding: 1rem 1.25rem;
+    border-top-width: 0.5px;
+  }
+
+  .stack-section { margin-top: 1.5rem; }
+
+  .stack-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+
+  .stack-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: var(--surface2);
+    color: var(--muted);
+    border: 0.5px solid var(--border);
+  }
+
+  /* ── Impact panel ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .metric-card {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    text-align: center;
+    border-bottom: 3px solid var(--az-teal);
+  }
+
+  .metric-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 38px;
+    color: var(--az-navy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .metric-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .impact-list { margin-bottom: 1.5rem; }
+
+  .impact-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .impact-row:last-child { border-bottom: none; }
+
+  .impact-row i {
+    color: var(--az-teal);
+    font-size: 16px;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .quote-box {
+    background: linear-gradient(135deg, #EBF3FB 0%, #E8F5F0 100%);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border-left: 3px solid var(--az-blue);
+  }
+
+  .quote-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--az-blue);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .quote-text {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--az-navy);
+    margin-bottom: 10px;
+  }
+
+  .quote-attr {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── Footer ── */
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2.25rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .footer-contact { display: flex; align-items: center; gap: 6px; }
+  .footer-contact a { color: var(--az-blue); text-decoration: none; }
+  .footer-contact a:hover { text-decoration: underline; }
+
+  .allianz-tech {
+    font-weight: 600;
+    color: var(--az-navy);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  @media (max-width: 520px) {
+    .card-header { padding: 1.5rem; }
+    .header-title { font-size: 20px; }
+    .panels { padding: 1.5rem; }
+    .tabs { padding: 0 1rem; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; }
+    .prob-num { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="card-header">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> AI4IT &nbsp;·&nbsp; AI Impact Stories</div>
+    <h1 class="header-title">Claude Bot Integration — GitHub Automation for Enterprise Platforms</h1>
+    <div class="allianz-badge">
+      <div class="allianz-logo">A</div>
+      Allianz Technology
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" role="tab" onclick="switchTab('problem', this)">
+      <i class="fa-solid fa-triangle-exclamation"></i> Problem
+    </button>
+    <button class="tab-btn" role="tab" onclick="switchTab('solution', this)">
+      <i class="fa-solid fa-lightbulb"></i> Solution
+    </button>
+    <button class="tab-btn" role="tab" onclick="switchTab('impact', this)">
+      <i class="fa-solid fa-chart-column"></i> Impact
+    </button>
+  </div>
+
+  <div class="panels">
+
+    <div id="panel-problem" class="panel visible">
+      <p class="problem-intro">A team of <strong>only 3 developers</strong> managing a platform with <strong>172 open issues</strong> — every pull request demanded a manual review against a 30-rule checklist covering tenant isolation, data safety, Java gotchas, and API compliance. Developers were trapped in review cycles instead of building features.</p>
+
+      <div class="prob-cards">
+        <div class="prob-card">
+          <div class="prob-num">172</div>
+          <div class="prob-label">Open issues</div>
+          <div class="prob-sub">Backlog growing faster than a 3-person team could clear</div>
+        </div>
+        <div class="prob-card amber">
+          <div class="prob-num">~45 min</div>
+          <div class="prob-label">Per PR review</div>
+          <div class="prob-sub">Manual 30-rule checklist on every single pull request</div>
+        </div>
+        <div class="prob-card gray">
+          <div class="prob-num"><i class="fa-solid fa-arrows-rotate"></i></div>
+          <div class="prob-label">Stuck in cycles</div>
+          <div class="prob-sub">Tenant isolation, PII, data safety — manually checked every time</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-solution" class="panel">
+      <p class="solution-intro">A two-tier <strong>Claude Code Action</strong> integrated directly into Allianz GitHub Enterprise. Click each tier to see how it works.</p>
+
+      <div class="sol-card" onclick="toggleSol(this)">
+        <div class="sol-head">
+          <div class="sol-head-left">
+            <div class="sol-icon"><i class="fa-solid fa-code-pull-request"></i></div>
+            <div>
+              <div class="tier-badge">Tier 1</div>
+              <div class="sol-name">Auto PR Review</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-down sol-chevron"></i>
+        </div>
+        <div class="sol-body">
+          Runs the complete 30-rule compliance checklist on every PR — automatically. Posts inline comments and a pass/fail summary directly on the pull request. No manual effort from developers at all. Every rule, every time.
+        </div>
+      </div>
+
+      <div class="sol-card" onclick="toggleSol(this)">
+        <div class="sol-head">
+          <div class="sol-head-left">
+            <div class="sol-icon"><i class="fa-solid fa-at"></i></div>
+            <div>
+              <div class="tier-badge">Tier 2</div>
+              <div class="sol-name">@claude Mention</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-down sol-chevron"></i>
+        </div>
+        <div class="sol-body">
+          Type <code style="background:#E6F1FB; color:#0C447C; padding:2px 6px; border-radius:4px; font-size:12px;">@claude</code> in any issue or PR. Claude reads the full context, writes the fix, commits it, and opens a pull request autonomously — acting as a virtual 4th team member available 24/7.
+        </div>
+      </div>
+
+      <div class="stack-section">
+        <div class="stack-label">Tech stack</div>
+        <div class="stack-pills">
+          <span class="pill"><i class="fa-solid fa-terminal" style="font-size:11px;"></i> Claude Code</span>
+          <span class="pill"><i class="fa-solid fa-rotate" style="font-size:11px;"></i> CI/CD integration</span>
+          <span class="pill"><i class="fa-brands fa-github" style="font-size:11px;"></i> GitHub Enterprise</span>
+          <span class="pill"><i class="fa-solid fa-database" style="font-size:11px;"></i> App2 — Party Data Mgmt</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-impact" class="panel">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">172</div>
+          <div class="metric-desc">issues resolved autonomously</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">~0 min</div>
+          <div class="metric-desc">PR review time (was ~45 min)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">17M</div>
+          <div class="metric-desc">records — quality gates held at scale</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3 → ∞</div>
+          <div class="metric-desc">team throughput, no headcount added</div>
+        </div>
+      </div>
+
+      <div class="impact-list">
+        <div class="impact-row"><i class="fa-solid fa-circle-check"></i> Compliance checks (tenant isolation, PII, data safety) never skipped on any PR</div>
+        <div class="impact-row"><i class="fa-solid fa-circle-check"></i> Coding standards self-enforcing via the bot's checklist — onboarding faster for new developers</div>
+        <div class="impact-row"><i class="fa-solid fa-circle-check"></i> Scales to any data volume while clearing the existing backlog</div>
+        <div class="impact-row"><i class="fa-solid fa-circle-check"></i> Sharable, reusable solution — ready for EMT-1 Townhalls, Frontline sessions, and Branch Level</div>
+      </div>
+
+      <div class="quote-box">
+        <div class="quote-label"><i class="fa-solid fa-quote-left"></i> Area Impact Quote</div>
+        <p class="quote-text">"With 172 issues and only 3 developers, we were facing an impossible backlog. The Claude bot changed everything — every PR is reviewed automatically, and it can take an issue all the way to a pull request on its own. It's like having a senior engineer who's always on and never misses a rule."</p>
+        <div class="quote-attr">Swajeevar Geevarghese · <a href="mailto:swajeevar.geevarghese@allianz.com" style="color:var(--az-blue); text-decoration:none;">swajeevar.geevarghese@allianz.com</a></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card-footer">
+    <div class="footer-contact">
+      <i class="fa-solid fa-envelope" style="font-size:12px;"></i>
+      Contact: <a href="mailto:swajeevar.geevarghese@allianz.com">swajeevar.geevarghese@allianz.com</a>
+    </div>
+    <div class="allianz-tech">
+      <div class="allianz-logo" style="width:18px; height:18px; font-size:9px;">A</div>
+      Allianz Technology
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function switchTab(name, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('visible');
+    btn.classList.add('active');
+  }
+
+  function toggleSol(card) {
+    const body = card.querySelector('.sol-body');
+    const chevron = card.querySelector('.sol-chevron');
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.sol-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.sol-chevron').forEach(c => c.classList.remove('open'));
+    if (!isOpen) {
+      body.classList.add('open');
+      chevron.classList.add('open');
+    }
+  }
+</script>
+
+</body>
+</html>
