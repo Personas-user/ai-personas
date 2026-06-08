@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CLASSIFIED · Operation Claude Bot · Allianz Technology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --ink:#0A0F1E;
+  --paper:#F2EFE6;
+  --stamp:#C8001E;
+  --az-navy:#003781;
+  --az-blue:#0070B9;
+  --az-gold:#D4A017;
+  --mono:'Share Tech Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+
+html{background:#D8D5CC}
+
+body{
+  font-family:var(--body);
+  background:var(--paper);
+  color:var(--ink);
+  width:680px;
+  max-width:96vw;
+  margin:1.5rem auto;
+  box-shadow:0 8px 60px rgba(0,0,0,0.35),0 2px 8px rgba(0,0,0,0.2);
+  position:relative;
+  overflow:hidden;
+}
+
+body::before{
+  content:'';
+  position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;
+}
+
+/* STAMP */
+.stamp{
+  position:absolute;top:64px;right:22px;
+  width:84px;height:84px;
+  border:4px solid var(--stamp);border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transform:rotate(-12deg);opacity:0.85;z-index:10;
+  animation:stampIn 0.6s 0.4s both cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes stampIn{from{opacity:0;transform:rotate(-12deg) scale(2.5)}to{opacity:0.85;transform:rotate(-12deg) scale(1)}}
+.stamp-top{font-family:var(--mono);font-size:7px;letter-spacing:0.12em;color:var(--stamp)}
+.stamp-main{font-family:var(--display);font-size:17px;color:var(--stamp);line-height:1}
+.stamp-bot{font-family:var(--mono);font-size:6.5px;letter-spacing:0.08em;color:var(--stamp)}
+
+/* HEADER */
+.header-band{
+  background:var(--az-navy);padding:10px 24px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:3px solid var(--az-gold);
+  position:relative;z-index:1;
+}
+.allianz-circle{
+  width:34px;height:34px;border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:17px;color:var(--az-navy);flex-shrink:0;
+}
+.band-org-top{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:0.1em}
+.band-org-main{font-family:var(--display);font-size:16px;color:#fff;letter-spacing:0.05em}
+
+/* CASE HEADER */
+.case-header{
+  padding:20px 24px 16px;position:relative;z-index:1;
+  border-bottom:1.5px solid rgba(0,0,0,0.12);
+}
+.case-meta{
+  font-family:var(--mono);font-size:8px;color:rgba(0,0,0,0.4);
+  letter-spacing:0.1em;margin-bottom:8px;
+}
+.case-title{
+  font-family:var(--display);font-size:40px;line-height:0.92;
+  letter-spacing:0.02em;color:var(--az-navy);margin-bottom:6px;max-width:480px;
+}
+.case-sub{font-size:11.5px;color:rgba(0,0,0,0.5);font-style:italic;line-height:1.5;max-width:520px}
+
+/* OPERATIVE */
+.operative{
+  margin:14px 24px 0;background:var(--az-navy);border-radius:3px;
+  padding:12px 16px;display:flex;align-items:center;gap:14px;
+  position:relative;z-index:1;
+}
+.op-avatar{
+  width:46px;height:46px;border-radius:3px;
+  background:linear-gradient(135deg,#0070B9,#003781);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:22px;color:#fff;flex-shrink:0;
+  border:2px solid var(--az-gold);
+}
+.op-label{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:0.13em}
+.op-name{font-family:var(--display);font-size:17px;color:#fff;letter-spacing:0.04em;line-height:1.1}
+.op-role{font-size:10px;color:rgba(255,255,255,0.6);line-height:1.4;margin-top:2px}
+.op-badge{
+  background:var(--az-gold);font-family:var(--mono);font-size:7.5px;
+  color:var(--ink);padding:4px 8px;border-radius:2px;letter-spacing:0.08em;
+  white-space:nowrap;margin-left:auto;text-align:center;line-height:1.4;
+}
+
+/* BODY GRID */
+.body-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  margin:14px 24px 0;position:relative;z-index:1;
+  border:1.5px solid rgba(0,0,0,0.12);border-radius:3px;overflow:hidden;
+}
+.section{padding:14px 16px;border-right:1.5px solid rgba(0,0,0,0.1);border-bottom:1.5px solid rgba(0,0,0,0.1)}
+.section:nth-child(2){border-right:none}
+.section:nth-child(3){border-bottom:none}
+.section:nth-child(4){border-right:none;border-bottom:none}
+
+.section-label{font-family:var(--mono);font-size:8px;letter-spacing:0.16em;color:rgba(0,0,0,0.35);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.section-label::before{content:'//';color:var(--az-blue);font-weight:bold}
+.section-title{font-family:var(--display);font-size:16px;color:var(--az-navy);margin-bottom:8px;letter-spacing:0.03em}
+.section p{font-size:10.5px;line-height:1.55;color:rgba(0,0,0,0.65)}
+
+.prob-nums{display:flex;gap:7px;margin-bottom:9px}
+.prob-num-box{background:rgba(200,0,30,0.06);border:1px solid rgba(200,0,30,0.2);border-radius:3px;padding:7px 8px;text-align:center;flex:1}
+.pn-val{font-family:var(--display);font-size:24px;color:var(--stamp);line-height:1}
+.pn-lbl{font-family:var(--mono);font-size:7px;color:rgba(0,0,0,0.5);letter-spacing:0.05em;margin-top:2px}
+
+.sol-item{display:flex;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed rgba(0,0,0,0.1)}
+.sol-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.sol-tag{font-family:var(--mono);font-size:7.5px;background:var(--az-navy);color:#fff;padding:3px 6px;border-radius:2px;white-space:nowrap;height:fit-content;margin-top:1px;letter-spacing:0.05em}
+.sol-body{font-size:10px;color:rgba(0,0,0,0.65);line-height:1.5}
+.sol-body strong{color:var(--az-navy);font-weight:500}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.met{background:rgba(0,55,129,0.04);border:1px solid rgba(0,55,129,0.12);border-radius:3px;padding:7px 9px}
+.met-val{font-family:var(--display);font-size:21px;color:var(--az-blue);line-height:1}
+.met-lbl{font-family:var(--mono);font-size:7px;color:rgba(0,0,0,0.45);margin-top:2px;line-height:1.3;letter-spacing:0.03em}
+
+/* QUOTE */
+.quote-strip{
+  margin:14px 24px 0;background:linear-gradient(135deg,var(--az-navy),#0058A0);
+  border-radius:3px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;
+  position:relative;z-index:1;
+}
+.quote-mark{font-family:var(--display);font-size:50px;color:var(--az-gold);line-height:0.6;flex-shrink:0;margin-top:4px}
+.quote-text{font-size:11px;color:rgba(255,255,255,0.85);line-height:1.6;font-style:italic;margin-bottom:6px}
+.quote-attr{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,0.45);letter-spacing:0.05em}
+
+/* FOOTER */
+.footer{
+  margin:14px 24px;padding-top:11px;display:flex;align-items:center;justify-content:space-between;
+  border-top:1.5px solid rgba(0,0,0,0.1);position:relative;z-index:1;
+}
+.footer-left{font-family:var(--mono);font-size:8px;color:rgba(0,0,0,0.4);line-height:1.6;letter-spacing:0.03em}
+.footer-left a{color:var(--az-blue);text-decoration:none}
+.footer-right{font-family:var(--display);font-size:15px;color:var(--az-navy);letter-spacing:0.05em;opacity:0.6;text-align:right;line-height:0.95}
+
+/* CORNERS */
+.corner{position:absolute;width:16px;height:16px;z-index:5}
+.corner-tl{top:6px;left:6px;border-top:2px solid var(--az-gold);border-left:2px solid var(--az-gold)}
+.corner-tr{top:6px;right:6px;border-top:2px solid var(--az-gold);border-right:2px solid var(--az-gold)}
+.corner-bl{bottom:6px;left:6px;border-bottom:2px solid var(--az-gold);border-left:2px solid var(--az-gold)}
+.corner-br{bottom:6px;right:6px;border-bottom:2px solid var(--az-gold);border-right:2px solid var(--az-gold)}
+
+.redact{background:var(--ink);color:var(--ink);border-radius:2px;cursor:pointer;transition:.3s;padding:0 2px;user-select:none}
+.redact:hover,.redact.revealed{background:var(--az-gold);color:var(--ink)}
+
+.case-header,.operative,.body-grid,.quote-strip,.footer{animation:slideUp 0.5s both ease-out}
+.operative{animation-delay:.1s}.body-grid{animation-delay:.2s}.quote-strip{animation-delay:.3s}.footer{animation-delay:.35s}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:560px){
+  .case-title{font-size:30px}
+  .body-grid{grid-template-columns:1fr}
+  .section{border-right:none}
+  .section:nth-child(2){border-bottom:1.5px solid rgba(0,0,0,0.1)}
+  .op-badge{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="stamp">
+  <div class="stamp-top">STATUS</div>
+  <div class="stamp-main">RESOLVED</div>
+  <div class="stamp-bot">AI4IT · 2025</div>
+</div>
+
+<div class="header-band">
+  <div class="allianz-circle">A</div>
+  <div>
+    <div class="band-org-top">AI4IT · AI IMPACT STORIES</div>
+    <div class="band-org-main">ALLIANZ TECHNOLOGY</div>
+  </div>
+</div>
+
+<div class="case-header">
+  <div class="case-meta">OPERATION CLAUDE BOT · GITHUB AUTOMATION · PARTY DATA MGMT</div>
+  <h1 class="case-title">THE IMPOSSIBLE BACKLOG</h1>
+  <p class="case-sub">How a 2-person team cleared 192 issues and reclaimed their platform — with an AI built into the workflow.</p>
+</div>
+
+<div class="operative">
+  <div class="op-avatar">SG</div>
+  <div>
+    <div class="op-label">// MISSION LEAD</div>
+    <div class="op-name">SWAJEEVAR GEEVARGHESE</div>
+    <div class="op-role">Technical Lead · Party Data Management · DSM · APP2, Allianz Technology</div>
+  </div>
+  <div class="op-badge">CONCEIVED +<br>BUILT IT</div>
+</div>
+
+<div class="body-grid">
+
+  <div class="section">
+    <div class="section-label">THE THREAT</div>
+    <div class="section-title">Mission Critical. Zero Slack.</div>
+    <div class="prob-nums">
+      <div class="prob-num-box"><div class="pn-val">192</div><div class="pn-lbl">ISSUES</div></div>
+      <div class="prob-num-box"><div class="pn-val">2</div><div class="pn-lbl">DEVS</div></div>
+      <div class="prob-num-box"><div class="pn-val">45<span style="font-size:12px">m</span></div><div class="pn-lbl">PER PR</div></div>
+    </div>
+    <p>Every PR needed a manual <strong style="color:var(--ink)">30+ point review</strong> — tenant isolation, PII safety, API contracts, audit trails. The choice: ship features, or hold the line on quality.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label">ASSET DEPLOYED</div>
+    <div class="section-title">A Virtual 4th Member</div>
+    <div class="sol-item">
+      <div class="sol-tag">T1</div>
+      <div class="sol-body"><strong>Auto PR Review</strong> — full checklist on every PR, inline comments + summary. 45 min → seconds, no exceptions.</div>
+    </div>
+    <div class="sol-item">
+      <div class="sol-tag">T2</div>
+      <div class="sol-body"><strong>@claude Mention</strong> — type @claude in any issue. Claude codes, commits &amp; opens a PR autonomously. Reusable GitHub Action.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">MISSION OUTCOME</div>
+    <div class="section-title">Numbers Don't Lie</div>
+    <div class="metrics">
+      <div class="met"><div class="met-val">192</div><div class="met-lbl">RESOLVED</div></div>
+      <div class="met"><div class="met-val">~0</div><div class="met-lbl">MIN PER REVIEW</div></div>
+      <div class="met"><div class="met-val">0</div><div class="met-lbl">COMPLIANCE MISSES</div></div>
+      <div class="met"><div class="met-val">17M</div><div class="met-lbl">RECORDS · HELD</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">STRATEGIC VALUE</div>
+    <div class="section-title">Built to Scale</div>
+    <p>2 people, the throughput of a larger team. Standards <strong style="color:var(--ink)">self-enforce</strong> — onboarding is instant. Architected as a reusable GitHub Action — a candidate for EMT-1 Townhalls, Frontline &amp; Branch sessions across Allianz Technology.</p>
+  </div>
+
+</div>
+
+<div class="quote-strip">
+  <div class="quote-mark">"</div>
+  <div>
+    <p class="quote-text">With 192 issues and only 2 developers, we faced an impossible backlog. The Claude bot changed everything — it can take an issue all the way to a pull request on its own. Like having a senior engineer who's always on and never misses a rule.</p>
+    <div class="quote-attr">— SWAJEEVAR GEEVARGHESE · TECH LEAD · APP2</div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-left">
+    swajeevar.geevarghese@allianz.com<br>
+    Claude Code · CI/CD · Allianz GitHub Enterprise
+  </div>
+  <div class="footer-right">ALLIANZ<br>TECHNOLOGY</div>
+</div>
+
+</body>
+</html>
