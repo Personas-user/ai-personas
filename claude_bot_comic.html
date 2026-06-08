@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Claude Bot — The Comic · Allianz Technology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=Archivo+Black&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --navy:#003781;
+  --blue:#0070B9;
+  --sky:#4FC3E8;
+  --yellow:#FFD23F;
+  --red:#EE4035;
+  --green:#22B573;
+  --ink:#16161D;
+  --cream:#FFF9EC;
+  --pop:'Bangers',cursive;
+  --head:'Archivo Black',sans-serif;
+  --body:'Comic Neue',cursive;
+}
+
+html{background:#2A2A35}
+
+body{
+  font-family:var(--body);
+  background:var(--navy);
+  width:720px;max-width:97vw;
+  margin:1.5rem auto;
+  padding:14px;
+  box-shadow:0 12px 60px rgba(0,0,0,0.5);
+  position:relative;
+}
+
+/* halftone bg behind comic */
+body::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle, rgba(255,255,255,0.08) 1.2px, transparent 1.3px);
+  background-size:11px 11px;
+  pointer-events:none;
+}
+
+.comic-wrap{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px}
+
+/* ── TITLE BANNER ── */
+.title-banner{
+  background:var(--yellow);
+  border:4px solid var(--ink);
+  border-radius:6px;
+  padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  box-shadow:6px 6px 0 var(--ink);
+  position:relative;
+  transform:rotate(-0.6deg);
+}
+.title-left{display:flex;align-items:center;gap:14px}
+.logo-burst{
+  width:50px;height:50px;background:var(--navy);
+  border:3px solid var(--ink);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--pop);font-size:30px;color:#fff;flex-shrink:0;
+  transform:rotate(4deg);
+}
+.title-text h1{
+  font-family:var(--pop);font-size:38px;color:var(--navy);
+  line-height:0.85;letter-spacing:0.02em;
+  text-shadow:2px 2px 0 rgba(0,0,0,0.12);
+}
+.title-text .issue{
+  font-family:var(--head);font-size:9px;color:var(--ink);
+  letter-spacing:0.15em;margin-top:3px;opacity:0.7;
+}
+.title-badge{
+  background:var(--red);color:#fff;font-family:var(--pop);
+  font-size:15px;padding:6px 12px;border:3px solid var(--ink);
+  border-radius:5px;transform:rotate(5deg);white-space:nowrap;
+  box-shadow:3px 3px 0 var(--ink);text-align:center;line-height:0.9;
+}
+.title-badge small{font-size:8px;font-family:var(--head);display:block;margin-top:2px}
+
+/* ── PANEL GRID ── */
+.panels{display:grid;grid-template-columns:1.1fr 1fr;gap:12px}
+
+.panel{
+  background:var(--cream);
+  border:4px solid var(--ink);
+  border-radius:5px;
+  padding:14px;
+  box-shadow:5px 5px 0 var(--ink);
+  position:relative;
+  overflow:hidden;
+}
+.panel.wide{grid-column:1/-1}
+
+.panel-num{
+  position:absolute;top:-2px;left:-2px;
+  background:var(--ink);color:var(--yellow);
+  font-family:var(--pop);font-size:18px;
+  width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+  border-bottom-right-radius:8px;
+}
+.panel-label{
+  font-family:var(--head);font-size:10px;letter-spacing:0.1em;
+  color:var(--blue);text-transform:uppercase;
+  margin-left:30px;margin-bottom:8px;
+}
+
+/* PANEL 1 - the crisis */
+.crisis-scene{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.hero-trio{display:flex;gap:-6px}
+.dev-icon{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--blue);border:3px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-left:-8px;color:#fff;
+}
+.dev-icon:first-child{margin-left:0}
+.vs-blob{
+  font-family:var(--pop);font-size:24px;color:var(--red);
+  transform:rotate(-8deg);
+}
+.issue-pile{
+  background:var(--red);color:#fff;font-family:var(--pop);
+  font-size:30px;padding:6px 14px;border:3px solid var(--ink);
+  border-radius:5px;line-height:0.9;text-align:center;transform:rotate(3deg);
+}
+.issue-pile small{font-family:var(--head);font-size:8px;display:block;margin-top:2px;letter-spacing:0.1em}
+.crisis-text{font-size:13px;line-height:1.45;color:var(--ink);font-weight:400}
+.crisis-text b{color:var(--red)}
+
+/* SPEECH BUBBLE */
+.bubble{
+  background:#fff;border:3px solid var(--ink);border-radius:18px;
+  padding:8px 14px;font-size:12px;line-height:1.4;color:var(--ink);
+  position:relative;margin-top:10px;font-style:italic;
+}
+.bubble::after{
+  content:'';position:absolute;bottom:-12px;left:24px;
+  width:0;height:0;border:8px solid transparent;
+  border-top-color:var(--ink);border-bottom:0;
+}
+.bubble::before{
+  content:'';position:absolute;bottom:-7px;left:26px;
+  width:0;height:0;border:6px solid transparent;
+  border-top-color:#fff;border-bottom:0;z-index:1;
+}
+
+/* PANEL 2 - the hero arrives */
+.hero-entry{text-align:center;padding:4px 0}
+.boom{
+  font-family:var(--pop);font-size:34px;color:var(--yellow);
+  -webkit-text-stroke:2px var(--ink);
+  text-stroke:2px var(--ink);
+  display:inline-block;transform:rotate(-4deg);
+  margin-bottom:6px;
+}
+.power-list{list-style:none;margin-top:8px;text-align:left}
+.power-list li{
+  display:flex;gap:8px;align-items:flex-start;
+  font-size:12px;line-height:1.4;margin-bottom:8px;color:var(--ink);
+}
+.power-tag{
+  background:var(--navy);color:var(--yellow);font-family:var(--pop);
+  font-size:12px;padding:2px 8px;border-radius:4px;white-space:nowrap;
+  flex-shrink:0;border:2px solid var(--ink);
+}
+.power-list b{color:var(--navy)}
+
+/* PANEL 3 - victory stats */
+.stat-burst{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
+.stat-pop{
+  background:var(--green);border:3px solid var(--ink);border-radius:5px;
+  padding:8px 4px;text-align:center;color:#fff;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.stat-pop:nth-child(2){background:var(--blue)}
+.stat-pop:nth-child(3){background:var(--red)}
+.stat-pop:nth-child(4){background:var(--navy)}
+.sp-val{font-family:var(--pop);font-size:26px;line-height:0.85}
+.sp-lbl{font-family:var(--head);font-size:7px;letter-spacing:0.04em;margin-top:4px;line-height:1.2}
+
+/* PANEL 4 - the quote / outro */
+.outro{display:flex;gap:14px;align-items:center}
+.hero-portrait{
+  width:62px;height:62px;border-radius:6px;
+  background:linear-gradient(135deg,var(--sky),var(--navy));
+  border:3px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--pop);font-size:30px;color:#fff;flex-shrink:0;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.outro-text{flex:1}
+.outro-quote{font-size:12.5px;line-height:1.45;color:var(--ink);font-style:italic;margin-bottom:6px}
+.outro-quote b{color:var(--navy);font-style:normal}
+.outro-attr{font-family:var(--head);font-size:9px;color:var(--blue);letter-spacing:0.05em}
+
+/* ── FOOTER STRIP ── */
+.footer-strip{
+  background:var(--ink);border-radius:5px;
+  padding:9px 16px;display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--head);font-size:8px;color:rgba(255,255,255,0.55);
+  letter-spacing:0.06em;flex-wrap:wrap;gap:6px;
+}
+.footer-strip a{color:var(--yellow);text-decoration:none}
+.footer-strip .tname{color:#fff;font-size:11px}
+
+/* floating action words */
+.zap{
+  position:absolute;font-family:var(--pop);
+  color:var(--yellow);-webkit-text-stroke:1.5px var(--ink);
+  z-index:3;pointer-events:none;opacity:0;
+}
+.z1{top:90px;right:40px;font-size:22px;transform:rotate(12deg);animation:popZap .5s 1s forwards}
+.z2{bottom:170px;left:30px;font-size:18px;transform:rotate(-10deg);color:var(--sky);animation:popZap .5s 1.3s forwards}
+@keyframes popZap{from{opacity:0;transform:scale(0) rotate(0)}to{opacity:1}}
+
+.panel,.title-banner,.footer-strip{animation:dropIn .45s both}
+.title-banner{animation-delay:0s}
+.panels .panel:nth-child(1){animation-delay:.12s}
+.panels .panel:nth-child(2){animation-delay:.24s}
+.panels .panel:nth-child(3){animation-delay:.36s}
+.panels .panel:nth-child(4){animation-delay:.48s}
+.footer-strip{animation-delay:.6s}
+@keyframes dropIn{from{opacity:0;transform:translateY(18px) rotate(-1deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
+.title-banner{transform:rotate(-0.6deg)}
+
+@media(max-width:600px){
+  .panels{grid-template-columns:1fr}
+  .title-text h1{font-size:28px}
+  .stat-burst{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="comic-wrap">
+
+  <div class="title-banner">
+    <div class="title-left">
+      <div class="logo-burst">A</div>
+      <div class="title-text">
+        <h1>CLAUDE BOT TO THE RESCUE!</h1>
+        <div class="issue">AI4IT IMPACT STORIES · NO. 20 · ALLIANZ TECHNOLOGY</div>
+      </div>
+    </div>
+    <div class="title-badge">CASE<br>CLOSED!<small>APP2 · PDM</small></div>
+  </div>
+
+  <div class="panels">
+
+    <!-- PANEL 1 -->
+    <div class="panel">
+      <div class="panel-num">1</div>
+      <div class="panel-label">Meanwhile, at Party Data Mgmt...</div>
+      <div class="crisis-scene">
+        <div class="hero-trio">
+          <div class="dev-icon">🧑‍💻</div>
+          <div class="dev-icon">👩‍💻</div>
+          <div class="dev-icon">🧑‍💻</div>
+        </div>
+        <div class="vs-blob">VS</div>
+        <div class="issue-pile">192<small>ISSUES</small></div>
+      </div>
+      <div class="crisis-text">Just <b>3 developers</b> guarding a 17M-record platform. Every PR meant a <b>30+ point manual review</b> — tenant isolation, PII safety, API contracts, audit trails. ~45 min, every single time.</div>
+      <div class="bubble">"Ship features... or hold the quality line? We can't do both!"</div>
+    </div>
+
+    <!-- PANEL 2 -->
+    <div class="panel">
+      <div class="panel-num">2</div>
+      <div class="panel-label">Then... a new ally appears!</div>
+      <div class="hero-entry">
+        <span class="boom">ENTER @CLAUDE!</span>
+      </div>
+      <ul class="power-list">
+        <li><span class="power-tag">POW!</span><span><b>Auto PR Review</b> — runs the full checklist on every PR. Inline comments + summary. 45 min → seconds.</span></li>
+        <li><span class="power-tag">ZAP!</span><span><b>@claude Mention</b> — type it anywhere. Claude codes, commits &amp; opens the PR itself. A reusable GitHub Action!</span></li>
+      </ul>
+    </div>
+
+    <!-- PANEL 3 -->
+    <div class="panel wide">
+      <div class="panel-num">3</div>
+      <div class="panel-label">The dust settles... VICTORY!</div>
+      <div class="stat-burst">
+        <div class="stat-pop"><div class="sp-val">192</div><div class="sp-lbl">ISSUES CRUSHED</div></div>
+        <div class="stat-pop"><div class="sp-val">~0</div><div class="sp-lbl">MIN PER REVIEW</div></div>
+        <div class="stat-pop"><div class="sp-val">0</div><div class="sp-lbl">COMPLIANCE MISSES</div></div>
+        <div class="stat-pop"><div class="sp-val">17M</div><div class="sp-lbl">RECORDS HELD</div></div>
+      </div>
+      <div class="crisis-text" style="margin-top:10px">A 3-person team now hits the throughput of a <b>much larger squad</b>. Standards <b>self-enforce</b> — new contributors get instant guidance. Built as a reusable Action, it's ready to suit up other teams: EMT-1 Townhalls, Frontline &amp; Branch sessions across Allianz Technology.</div>
+    </div>
+
+    <!-- PANEL 4 -->
+    <div class="panel wide">
+      <div class="panel-num">4</div>
+      <div class="panel-label">Our hero, in their own words</div>
+      <div class="outro">
+        <div class="hero-portrait">SG</div>
+        <div class="outro-text">
+          <div class="outro-quote">"With 192 issues and only 3 developers, we faced an impossible backlog. The Claude bot changed everything — it can take an issue all the way to a pull request on its own. Like having a <b>senior engineer who's always on and never misses a rule.</b>"</div>
+          <div class="outro-attr">SWAJEEVAR GEEVARGHESE · TECH LEAD, PARTY DATA MGMT · APP2 · CONCEIVED + BUILT THE SOLUTION</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-strip">
+    <div>CONTACT · <a href="mailto:swajeevar.geevarghese@allianz.com">swajeevar.geevarghese@allianz.com</a> &nbsp;·&nbsp; STACK · Claude Code · CI/CD · Allianz GitHub Enterprise</div>
+    <div class="tname">ALLIANZ TECHNOLOGY</div>
+  </div>
+
+</div>
+
+<span class="zap z1">BAM!</span>
+<span class="zap z2">WHOOSH!</span>
+
+</body>
+</html>
