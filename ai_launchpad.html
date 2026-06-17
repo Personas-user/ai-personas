@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Launchpad — Spec Driven Development</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --az-dark: #003781;
+  --az-white: #FFFFFF;
+  --az-mid-gray: #414141;
+  --az-light-gray: #CFCFCF;
+  --az-dark-blue: #122B54;
+  --az-light-blue: #006192;
+  --az-turquoise: #007AB3;
+  --az-green: #00B26B;
+  --az-green-light: #00d480;
+  --font-display: "Manrope", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background: #000;
+  color: var(--az-white);
+  overflow-x: hidden;
+}
+
+.section {
+  width: 100vw;
+  min-height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2rem, 5vw, 5rem) clamp(1.5rem, 6vw, 8rem);
+}
+
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: linear-gradient(90deg, var(--az-green), var(--az-turquoise));
+  transition: width 0.4s ease; z-index: 1000; width: 0%;
+}
+
+#nav-dots {
+  position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%);
+  z-index: 500; display: flex; flex-direction: column; gap: 10px;
+}
+.nav-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.3); border: none; cursor: pointer;
+  transition: all 0.3s ease; padding: 0;
+}
+.nav-dot.active { background: var(--az-green); transform: scale(1.4); }
+
+.section-counter {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.4); text-transform: uppercase;
+}
+
+.scroll-hint {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 0.15em;
+  text-transform: uppercase;
+  animation: bounce 2s ease-in-out infinite;
+}
+.scroll-hint svg { width: 20px; height: 20px; }
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+.reveal {
+  opacity: 0; transform: translateY(40px);
+  transition: opacity 0.8s var(--ease-expo), transform 0.8s var(--ease-expo);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-scale { opacity: 0; transform: scale(0.85); transition: opacity 0.8s var(--ease-expo), transform 0.8s var(--ease-expo); }
+.reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+.delay-1 { transition-delay: 0.1s !important; }
+.delay-2 { transition-delay: 0.2s !important; }
+.delay-3 { transition-delay: 0.3s !important; }
+.delay-4 { transition-delay: 0.4s !important; }
+.delay-5 { transition-delay: 0.5s !important; }
+.delay-6 { transition-delay: 0.6s !important; }
+.delay-7 { transition-delay: 0.7s !important; }
+
+/* SECTION 1 — HERO */
+#hero {
+  background: radial-gradient(ellipse at 30% 60%, #003781 0%, #001a40 50%, #000510 100%);
+  text-align: center;
+}
+#particle-canvas { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.hero-content { position: relative; z-index: 2; max-width: 1000px; width: 100%; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: rgba(0,178,107,0.15); border: 1px solid rgba(0,178,107,0.4);
+  color: var(--az-green-light); padding: 0.4rem 1.2rem; border-radius: 100px;
+  font-size: clamp(0.7rem, 1.2vw, 0.85rem); letter-spacing: 0.15em; text-transform: uppercase;
+  font-family: var(--font-display); font-weight: 600; margin-bottom: 2rem;
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--az-green); animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:0.7} }
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 800; line-height: 1.0;
+  color: var(--az-white); letter-spacing: -0.03em; margin-bottom: 1rem;
+}
+.hero-title .accent { color: var(--az-green); }
+.hero-subtitle {
+  font-family: var(--font-display); font-size: clamp(1rem, 2vw, 1.5rem);
+  font-weight: 300; color: rgba(255,255,255,0.7); margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
+}
+.hero-statement {
+  font-size: clamp(1.1rem, 2.2vw, 1.8rem); font-weight: 600;
+  color: var(--az-white); margin-bottom: 3rem; font-family: var(--font-display);
+}
+.hero-statement .highlight {
+  background: linear-gradient(90deg, var(--az-green), var(--az-turquoise));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-flow {
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(0.5rem, 2vw, 1.5rem); flex-wrap: wrap; margin-top: 1rem;
+}
+.flow-node {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px); border-radius: 12px;
+  padding: clamp(0.6rem, 1.5vw, 1rem) clamp(1rem, 2.5vw, 1.8rem);
+  font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(0.75rem, 1.3vw, 1rem); color: rgba(255,255,255,0.85); white-space: nowrap;
+}
+.flow-node.core {
+  background: linear-gradient(135deg, var(--az-dark), var(--az-light-blue));
+  border-color: var(--az-turquoise); color: white;
+  box-shadow: 0 0 30px rgba(0,122,179,0.4);
+}
+.flow-node.output { background: rgba(0,178,107,0.1); border-color: rgba(0,178,107,0.4); color: var(--az-green-light); }
+.flow-arrow { color: rgba(255,255,255,0.3); font-size: 1.2rem; font-family: var(--font-display); }
+
+/* SECTION 2 — PROBLEM */
+#problem { background: linear-gradient(160deg, #0a0a0a 0%, #0d1520 100%); }
+
+.section-label {
+  font-family: var(--font-display); font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.25em; text-transform: uppercase; color: var(--az-turquoise); margin-bottom: 1rem;
+}
+.section-title {
+  font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1.5rem; max-width: 900px;
+}
+.section-line { width: 40px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--az-green), var(--az-turquoise)); margin-bottom: 1.5rem; }
+
+.problem-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem; width: 100%; max-width: 1100px; margin-top: 2rem;
+}
+.problem-card {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 1.5rem; position: relative; overflow: hidden;
+  transition: all 0.4s ease;
+}
+.problem-card:hover { border-color: rgba(255,100,100,0.4); background: rgba(255,50,50,0.04); }
+.problem-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #ff4444, #ff8800); opacity: 0.6;
+}
+.problem-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.2);
+  display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 1rem;
+}
+.problem-card h3 { font-family: var(--font-display); font-size: clamp(0.85rem, 1.5vw, 1rem); font-weight: 700; color: var(--az-white); margin-bottom: 0.4rem; }
+.problem-card p { font-size: clamp(0.75rem, 1.2vw, 0.875rem); color: rgba(255,255,255,0.5); line-height: 1.5; }
+
+.stat-row { display: flex; gap: 2rem; flex-wrap: wrap; margin-top: 2.5rem; width: 100%; max-width: 1100px; }
+.stat-item { text-align: center; flex: 1; min-width: 150px; }
+.stat-number { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; color: #ff6644; line-height: 1; }
+.stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 0.3rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* SECTION 3 — SHIFT */
+#shift { background: radial-gradient(ellipse at 50% 50%, #001a3d 0%, #000a1a 70%, #000 100%); text-align: center; }
+
+.spec-orb {
+  position: relative; width: clamp(160px, 22vw, 240px); height: clamp(160px, 22vw, 240px);
+  margin: 2rem auto; display: flex; align-items: center; justify-content: center;
+}
+.orbit-ring {
+  position: absolute; border-radius: 50%; border: 1px solid rgba(0,122,179,0.2);
+  animation: orbit-spin 8s linear infinite;
+}
+.orbit-ring:nth-child(1) { inset: 0; }
+.orbit-ring:nth-child(2) { inset: -20px; animation-duration: 12s; }
+.orbit-ring:nth-child(3) { inset: -40px; animation-duration: 16s; animation-direction: reverse; border-color: rgba(0,178,107,0.15); }
+@keyframes orbit-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.orbit-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--az-turquoise); top: -4px; left: calc(50% - 4px); }
+.orbit-ring:nth-child(3) .orbit-dot { background: var(--az-green); }
+
+.spec-orb-inner {
+  width: clamp(120px, 18vw, 180px); height: clamp(120px, 18vw, 180px); border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--az-turquoise), var(--az-dark) 70%);
+  box-shadow: 0 0 60px rgba(0,122,179,0.5), 0 0 120px rgba(0,55,129,0.3);
+  animation: orb-pulse 3s ease-in-out infinite;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 0.2rem;
+  font-family: var(--font-display); z-index: 1; position: relative;
+}
+.spec-orb-inner span { font-size: clamp(0.65rem, 1.2vw, 0.85rem); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: white; }
+@keyframes orb-pulse {
+  0%,100%{box-shadow:0 0 60px rgba(0,122,179,0.5),0 0 120px rgba(0,55,129,0.3)}
+  50%{box-shadow:0 0 80px rgba(0,178,107,0.6),0 0 160px rgba(0,122,179,0.4)}
+}
+
+.shift-headline { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; margin: 1rem 0; }
+.shift-headline .blue { color: var(--az-turquoise); }
+.shift-headline .green { color: var(--az-green); }
+
+.convergence-items { display: flex; justify-content: center; gap: clamp(0.75rem, 2vw, 1.5rem); flex-wrap: wrap; margin-top: 1.5rem; max-width: 800px; }
+.conv-item {
+  background: rgba(0,178,107,0.06); border: 1px solid rgba(0,178,107,0.35);
+  border-radius: 10px; padding: 0.5rem 1.1rem;
+  font-family: var(--font-display); font-size: clamp(0.75rem, 1.2vw, 0.875rem);
+  font-weight: 600; color: var(--az-green-light);
+}
+
+/* SECTION 4 — HOW */
+#how { background: linear-gradient(180deg, #020d1a 0%, #010810 100%); }
+
+.how-layout {
+  display: grid; grid-template-columns: 1fr auto 1.8fr;
+  gap: clamp(1rem, 3vw, 3rem); width: 100%; max-width: 1300px; align-items: center;
+}
+.how-inputs { display: flex; flex-direction: column; gap: 0.75rem; }
+.input-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 0.9rem 1.2rem;
+  display: flex; align-items: center; gap: 0.75rem; transition: all 0.3s ease;
+}
+.input-card:hover { background: rgba(0,122,179,0.1); border-color: rgba(0,122,179,0.4); }
+.input-icon { font-size: 1.3rem; }
+.input-text { font-family: var(--font-display); font-size: clamp(0.75rem, 1.2vw, 0.875rem); font-weight: 600; color: rgba(255,255,255,0.8); }
+.input-sub { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+
+.ai-core-wrap { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 0.75rem; }
+.ai-core {
+  position: relative; width: clamp(100px, 12vw, 150px); height: clamp(100px, 12vw, 150px);
+  display: flex; align-items: center; justify-content: center;
+}
+.ai-core-inner {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #0084c7, var(--az-dark));
+  box-shadow: 0 0 50px rgba(0,132,199,0.6), 0 0 100px rgba(0,55,129,0.3);
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  font-family: var(--font-display); text-align: center;
+  animation: core-glow 2.5s ease-in-out infinite; position: relative; z-index: 1;
+}
+.ai-core-inner span { font-size: clamp(0.6rem, 1vw, 0.75rem); font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.9); }
+.ai-core-inner small { font-size: clamp(0.5rem, 0.8vw, 0.6rem); color: rgba(255,255,255,0.5); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.1rem; }
+@keyframes core-glow {
+  0%,100%{box-shadow:0 0 50px rgba(0,132,199,0.6),0 0 100px rgba(0,55,129,0.3)}
+  50%{box-shadow:0 0 70px rgba(0,178,107,0.5),0 0 140px rgba(0,122,179,0.4)}
+}
+.core-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(0,122,179,0.2); animation: ring-expand 2s ease-out infinite; }
+.core-ring:nth-child(1) { width: 130%; height: 130%; animation-delay: 0s; }
+.core-ring:nth-child(2) { width: 160%; height: 160%; animation-delay: 0.5s; }
+.core-ring:nth-child(3) { width: 190%; height: 190%; animation-delay: 1s; }
+@keyframes ring-expand { 0%{opacity:0.5;transform:scale(0.9)} 100%{opacity:0;transform:scale(1.1)} }
+
+.how-arrow { font-size: 1.8rem; color: rgba(255,255,255,0.2); text-align: center; }
+
+.how-outputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.output-card {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; padding: 0.9rem 1.1rem; transition: all 0.4s ease;
+}
+.output-card:hover { background: rgba(0,178,107,0.08); border-color: rgba(0,178,107,0.35); transform: translateY(-2px); }
+.output-card::before {
+  content: ''; display: block; width: 24px; height: 3px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--az-green), var(--az-turquoise)); margin-bottom: 0.5rem;
+}
+.output-card h4 { font-family: var(--font-display); font-size: clamp(0.7rem, 1.1vw, 0.825rem); font-weight: 700; color: var(--az-white); }
+.output-card p { font-size: clamp(0.6rem, 0.9vw, 0.7rem); color: rgba(255,255,255,0.45); margin-top: 0.2rem; }
+
+/* SECTION 5 — IMPACT */
+#impact { background: linear-gradient(160deg, #010d1f 0%, #020a15 100%); }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; width: 100%; max-width: 1200px; margin-top: 2rem; }
+.kpi-card {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px; padding: 1.5rem; position: relative; overflow: hidden;
+  transition: all 0.4s var(--ease-expo);
+}
+.kpi-card:hover { transform: translateY(-4px); background: rgba(0,178,107,0.06); border-color: rgba(0,178,107,0.3); }
+.kpi-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--az-green), var(--az-turquoise)); }
+.kpi-before { font-family: var(--font-display); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; color: rgba(255,100,100,0.7); line-height: 1; text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.2); }
+.kpi-arrow-v { color: rgba(255,255,255,0.3); font-size: 1rem; margin: 0.2rem 0; }
+.kpi-after { font-family: var(--font-display); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; color: var(--az-green); line-height: 1; }
+.kpi-label { font-family: var(--font-display); font-size: clamp(0.8rem, 1.2vw, 0.875rem); font-weight: 700; color: var(--az-white); margin-top: 0.75rem; }
+.kpi-desc { font-size: clamp(0.7rem, 1vw, 0.78rem); color: rgba(255,255,255,0.45); margin-top: 0.3rem; line-height: 1.4; }
+.kpi-badge {
+  display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.75rem;
+  background: rgba(0,178,107,0.12); border: 1px solid rgba(0,178,107,0.25);
+  color: var(--az-green-light); padding: 0.2rem 0.6rem; border-radius: 100px;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--font-display);
+}
+.kpi-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--az-green); }
+
+/* SECTION 6 — QUALITY */
+#quality { background: linear-gradient(180deg, #020b19 0%, #01060f 100%); }
+.quality-layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 4rem; width: 100%; max-width: 1200px; align-items: center; }
+.lifecycle-visual { display: flex; flex-direction: column; align-items: center; }
+.phase-node {
+  display: flex; align-items: center; gap: 1rem; width: 100%;
+  padding: 0.85rem 1.1rem; border-radius: 12px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+  transition: all 0.4s ease;
+}
+.phase-node.lit { background: rgba(0,178,107,0.08); border-color: rgba(0,178,107,0.35); }
+.phase-number {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 0.7rem; font-weight: 800; transition: all 0.4s ease;
+}
+.phase-node.lit .phase-number { background: var(--az-green); border-color: var(--az-green); color: #000; }
+.phase-info h4 { font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; color: var(--az-white); }
+.phase-info p { font-size: 0.72rem; color: rgba(255,255,255,0.45); margin-top: 0.1rem; }
+.phase-check { margin-left: auto; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,178,107,0.1); border: 1px solid rgba(0,178,107,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; transition: all 0.4s ease; flex-shrink: 0; }
+.phase-node.lit .phase-check { background: var(--az-green); border-color: var(--az-green); color: #000; }
+.phase-connector { width: 2px; height: 16px; margin: 0 auto; background: linear-gradient(180deg, rgba(0,178,107,0.3), rgba(0,122,179,0.3)); }
+.quality-headline { font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+.quality-point { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.1rem; }
+.qp-icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(0,178,107,0.1); border: 1px solid rgba(0,178,107,0.2); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+.qp-text h4 { font-family: var(--font-display); font-size: 0.875rem; font-weight: 700; color: var(--az-white); margin-bottom: 0.2rem; }
+.qp-text p { font-size: 0.78rem; color: rgba(255,255,255,0.5); line-height: 1.5; }
+
+/* SECTION 7 — PROOF */
+#proof { background: linear-gradient(160deg, #010a18 0%, #020d1f 100%); }
+.proof-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1100px; margin-top: 2rem; }
+.proof-card {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; padding: 2rem; position: relative; overflow: hidden;
+  transition: all 0.4s var(--ease-expo);
+}
+.proof-card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,55,129,0.3); border-color: rgba(0,122,179,0.4); }
+.proof-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1.2rem;
+  background: rgba(0,178,107,0.12); border: 1px solid rgba(0,178,107,0.3);
+  color: var(--az-green-light); padding: 0.3rem 0.75rem; border-radius: 100px;
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-family: var(--font-display);
+}
+.proof-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--az-green); display: inline-block; animation: pulse-dot 2s ease-in-out infinite; }
+.proof-title { font-family: var(--font-display); font-size: clamp(1.3rem, 2.5vw, 1.7rem); font-weight: 800; color: var(--az-white); margin-bottom: 0.75rem; }
+.proof-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.proof-tag { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); padding: 0.25rem 0.7rem; border-radius: 100px; font-size: 0.7rem; font-family: var(--font-display); font-weight: 500; }
+
+/* SECTION 8 — QUOTE */
+#quote-section {
+  background: radial-gradient(ellipse at 30% 50%, #003781 0%, #001a3d 50%, #000510 100%);
+  text-align: center;
+}
+.quote-mark { font-size: clamp(5rem, 12vw, 10rem); font-family: Georgia, serif; color: rgba(0,122,179,0.2); line-height: 0.5; margin-bottom: 0.5rem; display: block; }
+.quote-text { font-family: var(--font-display); font-size: clamp(1rem, 2.2vw, 1.45rem); font-weight: 300; line-height: 1.75; color: rgba(255,255,255,0.9); max-width: 880px; margin: 0 auto 2rem; }
+.quote-text em { font-style: normal; color: var(--az-turquoise); font-weight: 500; }
+.quote-text strong { font-weight: 700; color: white; }
+
+/* SECTION 9 — FUTURE */
+#future { background: linear-gradient(160deg, #010810 0%, #020f20 100%); }
+.future-comparison { display: grid; grid-template-columns: 1fr auto 1fr; gap: 2rem; width: 100%; max-width: 1100px; align-items: center; margin-top: 2rem; }
+.world-card { border-radius: 20px; padding: 1.75rem; }
+.world-old { background: rgba(255,50,50,0.04); border: 1px solid rgba(255,50,50,0.1); }
+.world-new { background: rgba(0,178,107,0.04); border: 1px solid rgba(0,178,107,0.15); }
+.world-label { font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1.25rem; }
+.world-old .world-label { color: rgba(255,100,100,0.7); }
+.world-new .world-label { color: var(--az-green); }
+.world-step { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.7rem; }
+.world-step-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.world-old .world-step-dot { background: rgba(255,100,100,0.5); }
+.world-new .world-step-dot { background: var(--az-green); }
+.world-step-text { font-family: var(--font-display); font-size: clamp(0.78rem, 1.2vw, 0.875rem); font-weight: 600; color: rgba(255,255,255,0.75); }
+.vs-divider { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+.time-from { font-family: var(--font-display); font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 800; color: rgba(255,100,100,0.6); text-decoration: line-through; }
+.time-to { font-family: var(--font-display); font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 800; color: var(--az-green); }
+.vs-arrow { font-size: 1.5rem; color: rgba(255,255,255,0.2); }
+
+/* SECTION 10 — CLOSING */
+#closing {
+  background: radial-gradient(ellipse at 50% 40%, #003781 0%, #001a3d 40%, #000510 100%);
+  text-align: center;
+}
+.closing-headline { font-family: var(--font-display); font-size: clamp(2.5rem, 7vw, 5.5rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 1.5rem; }
+.closing-headline .line-green { color: var(--az-green); }
+.closing-headline .line-blue { color: var(--az-turquoise); }
+.closing-headline .line-white { color: white; }
+.closing-sub { font-family: var(--font-display); font-size: clamp(1rem, 2vw, 1.35rem); font-weight: 300; color: rgba(255,255,255,0.65); max-width: 680px; margin: 0 auto 2rem; line-height: 1.6; }
+.closing-meta { display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; margin-top: 2.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 2rem; }
+.meta-item { text-align: center; }
+.meta-label { font-size: 0.65rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 0.3rem; font-family: var(--font-display); }
+.meta-value { font-family: var(--font-display); font-size: clamp(0.75rem, 1.2vw, 0.9rem); font-weight: 600; color: rgba(255,255,255,0.8); }
+.az-logo-mark {
+  width: 48px; height: 48px; background: var(--az-dark); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;
+  font-family: var(--font-display); font-weight: 900; font-size: 1.4rem; color: white;
+  box-shadow: 0 0 30px rgba(0,55,129,0.5);
+}
+
+@media (max-width: 900px) {
+  .how-layout { grid-template-columns: 1fr; }
+  .quality-layout { grid-template-columns: 1fr; gap: 2rem; }
+  .future-comparison { grid-template-columns: 1fr; }
+  .vs-divider { flex-direction: row; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div id="nav-dots"></div>
+
+<!-- SECTION 1: HERO -->
+<section class="section" id="hero" data-index="0">
+  <canvas id="particle-canvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge reveal">AI-Powered Delivery</div>
+    <h1 class="hero-title reveal delay-1">AI <span class="accent">Launchpad</span></h1>
+    <p class="hero-subtitle reveal delay-2">MVP Creation with Spec Driven Development</p>
+    <p class="hero-statement reveal delay-3">From requirement to working prototype — <span class="highlight">in hours, not weeks.</span></p>
+    <div class="hero-flow reveal delay-4">
+      <div class="flow-node">📋 Requirements</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">📐 Specification</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node core">⚡ AI Launchpad</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node output">🚀 Working MVP</div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+</section>
+
+<!-- SECTION 2: THE PROBLEM -->
+<section class="section" id="problem" data-index="1">
+  <div style="width:100%;max-width:1100px;">
+    <div class="section-label reveal">The Challenge</div>
+    <h2 class="section-title reveal delay-1">What Slowed Us Down</h2>
+    <div class="section-line reveal delay-1"></div>
+    <p class="reveal delay-2" style="font-size:clamp(0.9rem,1.6vw,1.05rem);color:rgba(255,255,255,0.55);max-width:620px;margin-bottom:0.5rem;line-height:1.6;">Traditional software delivery fragments knowledge across disconnected artifacts — creating drift, delay, and rework at every handoff.</p>
+    <div class="problem-grid">
+      <div class="problem-card reveal delay-2">
+        <div class="problem-icon">📄</div>
+        <h3>Documentation Drift</h3>
+        <p>Requirements and architecture diverge from actual implementation within days of writing</p>
+      </div>
+      <div class="problem-card reveal delay-3">
+        <div class="problem-icon">⏳</div>
+        <h3>Weeks of Scaffolding</h3>
+        <p>Project setup and structural decisions consume entire sprints before any business logic</p>
+      </div>
+      <div class="problem-card reveal delay-4">
+        <div class="problem-icon">🔄</div>
+        <h3>Late Governance Reviews</h3>
+        <p>Architecture and compliance reviews arrive after build — triggering costly rework loops</p>
+      </div>
+      <div class="problem-card reveal delay-5">
+        <div class="problem-icon">🧩</div>
+        <h3>Fragmented Artifacts</h3>
+        <p>Requirements, UML, API specs, and UI designs live in silos with no single source of truth</p>
+      </div>
+      <div class="problem-card reveal delay-5">
+        <div class="problem-icon">👥</div>
+        <h3>Stakeholder Waiting</h3>
+        <p>Business sponsors wait weeks for a demo while teams build infrastructure instead of features</p>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-item reveal delay-3"><div class="stat-number">6–8</div><div class="stat-label">Weeks to first prototype</div></div>
+      <div class="stat-item reveal delay-4"><div class="stat-number">40%</div><div class="stat-label">Rework from late reviews</div></div>
+      <div class="stat-item reveal delay-5"><div class="stat-number">3–5</div><div class="stat-label">Disconnected artifact types</div></div>
+    </div>
+  </div>
+  <div class="section-counter">02 / 10</div>
+</section>
+
+<!-- SECTION 3: THE SHIFT -->
+<section class="section" id="shift" data-index="2">
+  <div style="position:relative;z-index:2;width:100%;max-width:900px;text-align:center;">
+    <div class="section-label reveal">The Transformation</div>
+    <h2 class="shift-headline reveal delay-1">One <span class="blue">Spec.</span><br>One <span class="green">Source of Truth.</span></h2>
+    <div class="spec-orb reveal-scale delay-2">
+      <div class="orbit-ring"><div class="orbit-dot"></div></div>
+      <div class="orbit-ring"><div class="orbit-dot"></div></div>
+      <div class="orbit-ring"><div class="orbit-dot"></div></div>
+      <div class="spec-orb-inner"><span>THE</span><span>SPECIFICATION</span></div>
+    </div>
+    <p class="reveal delay-3" style="font-size:clamp(0.9rem,1.8vw,1.15rem);color:rgba(255,255,255,0.6);max-width:600px;margin:0 auto 2rem;line-height:1.65;">The specification drives architecture, implementation, governance, and delivery — every artifact generated, not written.</p>
+    <div class="convergence-items reveal delay-4">
+      <div class="conv-item">Architecture</div>
+      <div class="conv-item">Requirements</div>
+      <div class="conv-item">UML Diagrams</div>
+      <div class="conv-item">API Contracts</div>
+      <div class="conv-item">UI Scaffolding</div>
+      <div class="conv-item">Governance</div>
+    </div>
+  </div>
+  <div class="section-counter">03 / 10</div>
+</section>
+
+<!-- SECTION 4: HOW IT WORKS -->
+<section class="section" id="how" data-index="3">
+  <div style="width:100%;max-width:1300px;">
+    <div class="section-label reveal">The Engine</div>
+    <h2 class="section-title reveal delay-1">How AI Launchpad Works</h2>
+    <div class="section-line reveal delay-1"></div>
+    <div class="how-layout">
+      <div class="how-inputs">
+        <p class="reveal delay-2" style="font-size:0.7rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.18em;font-family:var(--font-display);font-weight:600;margin-bottom:0.4rem;">Inputs</p>
+        <div class="input-card reveal delay-2"><div class="input-icon">📋</div><div><div class="input-text">Requirements</div><div class="input-sub">Business goals, user stories, constraints</div></div></div>
+        <div class="input-card reveal delay-3"><div class="input-icon">🎨</div><div><div class="input-text">Figma Designs</div><div class="input-sub">UI mockups and design tokens</div></div></div>
+        <div class="input-card reveal delay-4"><div class="input-icon">📸</div><div><div class="input-text">Screenshots</div><div class="input-sub">Reference UI from existing systems</div></div></div>
+        <div class="input-card reveal delay-5"><div class="input-icon">💬</div><div><div class="input-text">Natural Language</div><div class="input-sub">Plain-text feature descriptions</div></div></div>
+      </div>
+      <div class="ai-core-wrap">
+        <div class="how-arrow reveal delay-2">→</div>
+        <div class="ai-core reveal-scale delay-3">
+          <div class="core-ring"></div><div class="core-ring"></div><div class="core-ring"></div>
+          <div class="ai-core-inner"><span>AI</span><small>Launchpad</small></div>
+        </div>
+        <div class="how-arrow reveal delay-4">→</div>
+      </div>
+      <div class="how-outputs">
+        <p style="grid-column:1/-1;font-size:0.7rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.18em;font-family:var(--font-display);font-weight:600;margin-bottom:0.25rem;" class="reveal delay-3">Generated Outputs</p>
+        <div class="output-card reveal delay-3"><h4>Architecture</h4><p>C4 diagrams, component structure</p></div>
+        <div class="output-card reveal delay-4"><h4>UML Diagrams</h4><p>Class, sequence, and flow diagrams</p></div>
+        <div class="output-card reveal delay-4"><h4>OpenAPI Spec</h4><p>Contract-first API definitions</p></div>
+        <div class="output-card reveal delay-5"><h4>UI Scaffolding</h4><p>Components from Figma or prompts</p></div>
+        <div class="output-card reveal delay-5"><h4>Project Structure</h4><p>Allianz-standard folder layout</p></div>
+        <div class="output-card reveal delay-6"><h4>Standards Compliance</h4><p>Governance built in by default</p></div>
+        <div class="output-card reveal delay-6"><h4>Testing Framework</h4><p>Unit, integration, and E2E plans</p></div>
+        <div class="output-card reveal delay-7"><h4>Data Models</h4><p>Entity definitions and schemas</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="section-counter">04 / 10</div>
+</section>
+
+<!-- SECTION 5: IMPACT DASHBOARD -->
+<section class="section" id="impact" data-index="4">
+  <div style="width:100%;max-width:1200px;">
+    <div class="section-label reveal">Measured Impact</div>
+    <h2 class="section-title reveal delay-1">What Concretely Changes</h2>
+    <div class="section-line reveal delay-1"></div>
+    <div class="kpi-grid">
+      <div class="kpi-card reveal delay-2"><div class="kpi-before">Weeks</div><div class="kpi-arrow-v">↓</div><div class="kpi-after">Hours</div><div class="kpi-label">Idea → Working Prototype</div><div class="kpi-desc">From business brief to running application</div><div class="kpi-badge">10× Faster</div></div>
+      <div class="kpi-card reveal delay-3"><div class="kpi-before">Manual</div><div class="kpi-arrow-v">↓</div><div class="kpi-after">Automatic</div><div class="kpi-label">Architecture & UML</div><div class="kpi-desc">Generated directly from the specification</div><div class="kpi-badge">Zero Effort</div></div>
+      <div class="kpi-card reveal delay-4"><div class="kpi-before">Days</div><div class="kpi-arrow-v">↓</div><div class="kpi-after">Minutes</div><div class="kpi-label">UI Scaffolding</div><div class="kpi-desc">Figma, screenshots, or prompts → components</div><div class="kpi-badge">Instant</div></div>
+      <div class="kpi-card reveal delay-4"><div class="kpi-before">Later</div><div class="kpi-arrow-v">↓</div><div class="kpi-after">Built-In</div><div class="kpi-label">Allianz Standards</div><div class="kpi-desc">Enterprise patterns in every project by default</div><div class="kpi-badge">By Default</div></div>
+      <div class="kpi-card reveal delay-5"><div class="kpi-before">Reactive</div><div class="kpi-arrow-v">↓</div><div class="kpi-after">Proactive</div><div class="kpi-label">Quality Assurance</div><div class="kpi-desc">Specify → Plan → Task → Implement → Validate</div><div class="kpi-badge">Continuous</div></div>
+      <div class="kpi-card reveal delay-5"><div class="kpi-before">Rework</div><div class="kpi-arrow-v">↓</div><div class="kpi-after">Scalable</div><div class="kpi-label">Prototype to Production</div><div class="kpi-desc">No rewrite — prototypes are production foundations</div><div class="kpi-badge">Production Ready</div></div>
+    </div>
+  </div>
+  <div class="section-counter">05 / 10</div>
+</section>
+
+<!-- SECTION 6: QUALITY BY DESIGN -->
+<section class="section" id="quality" data-index="5">
+  <div class="quality-layout">
+    <div class="lifecycle-visual">
+      <div class="phase-node reveal delay-1"><div class="phase-number">1</div><div class="phase-info"><h4>Specify</h4><p>Define requirements & constraints</p></div><div class="phase-check">✓</div></div>
+      <div class="phase-connector"></div>
+      <div class="phase-node reveal delay-2"><div class="phase-number">2</div><div class="phase-info"><h4>Plan</h4><p>AI generates architecture & tasks</p></div><div class="phase-check">✓</div></div>
+      <div class="phase-connector"></div>
+      <div class="phase-node reveal delay-3"><div class="phase-number">3</div><div class="phase-info"><h4>Task</h4><p>Structured work items with context</p></div><div class="phase-check">✓</div></div>
+      <div class="phase-connector"></div>
+      <div class="phase-node reveal delay-4"><div class="phase-number">4</div><div class="phase-info"><h4>Implement</h4><p>Code scaffolded to spec standards</p></div><div class="phase-check">✓</div></div>
+      <div class="phase-connector"></div>
+      <div class="phase-node reveal delay-5"><div class="phase-number">5</div><div class="phase-info"><h4>Validate</h4><p>Automated checks against the spec</p></div><div class="phase-check">✓</div></div>
+      <div class="phase-connector"></div>
+      <div class="phase-node reveal delay-6"><div class="phase-number">6</div><div class="phase-info"><h4>Deploy</h4><p>Standards-compliant, governance-ready</p></div><div class="phase-check">✓</div></div>
+    </div>
+    <div>
+      <div class="section-label reveal">Quality by Design</div>
+      <h2 class="quality-headline reveal delay-1">Quality is no longer a final review.<br><span style="color:var(--az-green)">It is continuous.</span></h2>
+      <div class="section-line reveal delay-1"></div>
+      <div class="quality-point reveal delay-2">
+        <div class="qp-icon">🛡️</div>
+        <div class="qp-text"><h4>Governance at the Start</h4><p>Compliance requirements enter the specification, not the review process. Every phase inherits the governance layer automatically.</p></div>
+      </div>
+      <div class="quality-point reveal delay-3">
+        <div class="qp-icon">🔗</div>
+        <div class="qp-text"><h4>Traceability End-to-End</h4><p>Every generated artifact traces back to its specification origin. Auditors follow the thread from requirement to deployment.</p></div>
+      </div>
+      <div class="quality-point reveal delay-4">
+        <div class="qp-icon">⚡</div>
+        <div class="qp-text"><h4>Instant Validation Loops</h4><p>AI validates implementation against the spec at every stage — catching drift before it becomes expensive rework.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="section-counter">06 / 10</div>
+</section>
+
+<!-- SECTION 7: REAL-WORLD PROOF -->
+<section class="section" id="proof" data-index="6">
+  <div style="width:100%;max-width:1100px;">
+    <div class="section-label reveal">In Production Today</div>
+    <h2 class="section-title reveal delay-1">Already Running in Production</h2>
+    <div class="section-line reveal delay-1"></div>
+    <div class="proof-grid">
+      <div class="proof-card reveal delay-2">
+        <div class="proof-badge"><span></span>Production</div>
+        <h3 class="proof-title">Kaira Discovery</h3>
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;line-height:1.55;">Enterprise knowledge discovery platform built on AI Launchpad's spec-driven foundation, delivering reusable architecture patterns at scale.</p>
+        <div class="proof-tags"><span class="proof-tag">Reusable Foundation</span><span class="proof-tag">Enterprise Standards</span><span class="proof-tag">Accelerated Delivery</span></div>
+      </div>
+      <div class="proof-card reveal delay-3">
+        <div class="proof-badge"><span></span>Production</div>
+        <h3 class="proof-title">BreachBunny</h3>
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;line-height:1.55;">Security intelligence platform from specification to production-ready MVP, with governance and compliance built in from day one.</p>
+        <div class="proof-tags"><span class="proof-tag">Production Ready</span><span class="proof-tag">Compliance Built-In</span><span class="proof-tag">Spec Driven</span></div>
+      </div>
+      <div class="proof-card reveal delay-4">
+        <div class="proof-badge"><span></span>Production</div>
+        <h3 class="proof-title">AzIreland</h3>
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;line-height:1.55;">Regional operations platform demonstrating how AI Launchpad scales across geographies with consistent Allianz standards and patterns.</p>
+        <div class="proof-tags"><span class="proof-tag">Allianz Standards</span><span class="proof-tag">Scalable Pattern</span><span class="proof-tag">Rapid MVP</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="section-counter">07 / 10</div>
+</section>
+
+<!-- SECTION 8: EXECUTIVE QUOTE -->
+<section class="section" id="quote-section" data-index="7">
+  <div style="max-width:900px;text-align:center;position:relative;z-index:2;">
+    <span class="quote-mark reveal">"</span>
+    <blockquote class="quote-text reveal delay-2">
+      Speed and structure stop being a trade-off — <em>governance becomes proactive, not reactive.</em> Every new application inherits enterprise patterns by default, so <strong>prototypes scale to production without a rewrite.</strong> Architects, developers, and reviewers all operate on the same spec — <em>collaboration improves because everyone reads the same source.</em>
+    </blockquote>
+  </div>
+  <div class="section-counter" style="color:rgba(255,255,255,0.3)">08 / 10</div>
+</section>
+
+<!-- SECTION 9: FUTURE STATE -->
+<section class="section" id="future" data-index="8">
+  <div style="width:100%;max-width:1100px;">
+    <div class="section-label reveal">The New Reality</div>
+    <h2 class="section-title reveal delay-1">From Idea to Enterprise-Ready MVP</h2>
+    <div class="section-line reveal delay-1"></div>
+    <div class="future-comparison">
+      <div class="world-card world-old reveal delay-2">
+        <div class="world-label">⚠ Old World</div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Write requirements document</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Create separate architecture doc</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Design review — week 3</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Build scaffolding and boilerplate</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Late governance review</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Rework from review findings</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">First working prototype</div></div>
+      </div>
+      <div class="vs-divider reveal delay-3">
+        <div class="time-from">Weeks</div>
+        <div class="vs-arrow">↓</div>
+        <div class="time-to">Hours</div>
+      </div>
+      <div class="world-card world-new reveal delay-4">
+        <div class="world-label">✓ AI Launchpad</div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Write the specification</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">AI generates architecture and UML</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Governance embedded automatically</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Scaffolding generated from spec</div></div>
+        <div class="world-step"><div class="world-step-dot"></div><div class="world-step-text">Standards compliance by default</div></div>
+        <div class="world-step" style="color:var(--az-green)"><div class="world-step-dot"></div><div class="world-step-text" style="color:var(--az-green);font-weight:700;">Working MVP — production-ready</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="section-counter">09 / 10</div>
+</section>
+
+<!-- SECTION 10: CLOSING -->
+<section class="section" id="closing" data-index="9">
+  <div style="position:relative;z-index:2;text-align:center;max-width:1000px;">
+    <div class="az-logo-mark reveal">A</div>
+    <h2 class="closing-headline">
+      <div class="reveal line-green">Build Faster.</div>
+      <div class="reveal delay-1 line-blue">Govern Better.</div>
+      <div class="reveal delay-2 line-white">Scale Smarter.</div>
+    </h2>
+    <p class="closing-sub reveal delay-3">AI Launchpad transforms specifications into production-ready foundations — with architecture, governance, and Allianz standards built in from the first line.</p>
+    <div class="closing-meta reveal delay-4">
+      <div class="meta-item"><div class="meta-label">Built With</div><div class="meta-value">Claude Code Agent SDK</div></div>
+      <div class="meta-item"><div class="meta-label">Unit</div><div class="meta-value">CTO2 – India</div></div>
+      <div class="meta-item"><div class="meta-label">Contact</div><div class="meta-value">Karthik Gopakumar</div></div>
+    </div>
+  </div>
+  <div class="section-counter" style="color:rgba(255,255,255,0.3)">10 / 10</div>
+</section>
+
+<script>
+// Particle canvas
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+
+function createParticles() {
+  particles = [];
+  const count = Math.min(55, Math.floor(window.innerWidth / 22));
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
+      r: Math.random() * 1.8 + 0.8, alpha: Math.random() * 0.45 + 0.15
+    });
+  }
+}
+
+function drawParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,178,107,${p.alpha})`; ctx.fill();
+  });
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 110) {
+        ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(0,122,179,${0.12 * (1 - dist/110)})`;
+        ctx.lineWidth = 0.8; ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(drawParticles);
+}
+
+resizeCanvas(); createParticles(); drawParticles();
+window.addEventListener('resize', () => { resizeCanvas(); createParticles(); });
+
+// Progress bar & nav dots
+const progressBar = document.getElementById('progress-bar');
+const sections = document.querySelectorAll('.section');
+const navDotsContainer = document.getElementById('nav-dots');
+
+sections.forEach((s, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  dot.setAttribute('aria-label', 'Section ' + (i+1));
+  dot.addEventListener('click', () => s.scrollIntoView({ behavior: 'smooth' }));
+  navDotsContainer.appendChild(dot);
+});
+
+function updateNav() {
+  let current = 0;
+  sections.forEach((s, i) => {
+    if (s.getBoundingClientRect().top <= window.innerHeight * 0.5) current = i;
+  });
+  progressBar.style.width = `${((current + 1) / sections.length) * 100}%`;
+  document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+}
+
+// Intersection Observer for reveal animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.querySelectorAll('.reveal, .reveal-scale').forEach(el => el.classList.add('visible'));
+      if (entry.target.id === 'quality') {
+        entry.target.querySelectorAll('.phase-node').forEach((n, i) => setTimeout(() => n.classList.add('lit'), 300 + i * 180));
+      }
+    }
+  });
+}, { threshold: 0.15 });
+
+sections.forEach(s => observer.observe(s));
+window.addEventListener('scroll', updateNav, { passive: true });
+updateNav();
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === ' ') {
+    e.preventDefault();
+    let cur = 0;
+    sections.forEach((s, i) => { if (s.getBoundingClientRect().top <= window.innerHeight * 0.5) cur = i; });
+    if (cur < sections.length - 1) sections[cur + 1].scrollIntoView({ behavior: 'smooth' });
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    let cur = 0;
+    sections.forEach((s, i) => { if (s.getBoundingClientRect().top <= window.innerHeight * 0.5) cur = i; });
+    if (cur > 0) sections[cur - 1].scrollIntoView({ behavior: 'smooth' });
+  }
+});
+</script>
+</body>
+</html>
