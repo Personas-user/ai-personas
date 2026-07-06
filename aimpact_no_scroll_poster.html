@@ -1,0 +1,265 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.canvas{width:680px;height:520px;background:#060c18;border-radius:16px;overflow:hidden;display:grid;grid-template-rows:64px 1fr 52px 68px;font-family:'Space Grotesk',sans-serif;color:#dde5ef;position:relative;}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;}
+.hdr-l{display:flex;flex-direction:column;gap:1px;}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#2dcfaa;display:flex;align-items:center;gap:5px;}
+.dot{width:5px;height:5px;border-radius:50%;background:#2dcfaa;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.htitle{font-size:17px;font-weight:700;letter-spacing:-.02em;color:#eef2f7;}
+.htitle em{color:#2dcfaa;font-style:normal;}
+.hdr-r{display:flex;gap:8px;align-items:center;}
+.qblock{font-size:10px;border-left:2px solid #2dcfaa;padding-left:8px;color:#8aa0b5;line-height:1.3;max-width:180px;}
+.stats{display:flex;gap:6px;}
+.st{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:4px 9px;text-align:left;}
+.stn{font-size:13px;font-weight:700;color:#1ab8f5;line-height:1;}
+.stn small{font-size:9px;color:#2dcfaa;}
+.stl{font-size:8px;color:#4a5e72;margin-top:1px;}
+.stage{display:grid;grid-template-columns:172px 1fr 172px;gap:0;min-height:0;}
+.col{display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative;}
+.col-b{border-right:1px solid rgba(255,255,255,.06);background:linear-gradient(160deg,rgba(200,50,40,.07),transparent 55%);}
+.col-c{border-right:1px solid rgba(255,255,255,.06);}
+.col-a{background:linear-gradient(160deg,rgba(18,180,140,.07),transparent 55%);}
+.col-tag{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.09em;text-transform:uppercase;padding:2px 8px;border-radius:100px;white-space:nowrap;z-index:3;}
+.tag-b{color:#e05a50;background:rgba(200,50,40,.14);border:1px solid rgba(200,50,40,.28);}
+.tag-c{color:#1ab8f5;background:rgba(0,184,245,.12);border:1px solid rgba(0,184,245,.28);}
+.tag-a{color:#2dcfaa;background:rgba(18,180,140,.12);border:1px solid rgba(18,180,140,.28);}
+.col-svg{flex:1;width:100%;min-height:0;}
+.conv{position:absolute;inset:0;top:26px;display:flex;flex-direction:column;justify-content:flex-end;padding:0 12px 8px;gap:5px;z-index:2;}
+.msg{display:flex;gap:6px;opacity:0;transform:translateY(3px);}
+.msg.in{animation:mi .3s ease forwards;}
+@keyframes mi{to{opacity:1;transform:none}}
+.who{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;flex-shrink:0;width:44px;margin-top:1px;}
+.who-e{color:#1ab8f5;}.who-c{color:#2dcfaa;}
+.mtxt{font-family:'JetBrains Mono',monospace;font-size:9px;color:#6a8499;line-height:1.35;}
+.chk{display:flex;align-items:center;gap:4px;color:#2dcfaa;font-family:'JetBrains Mono',monospace;font-size:9px;}
+.circ{flex-shrink:0;background:#080f1e;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px;padding:0 14px;}
+.ce1{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.09em;text-transform:uppercase;color:#1ab8f5;display:block;margin-bottom:1px;}
+.ce2{font-size:11px;font-weight:600;color:#dde5ef;}
+.ceyebrow{flex-shrink:0;min-width:74px;}
+.csvg{flex:1;height:52px;}
+.foot{display:grid;grid-template-columns:repeat(5,1fr) 1.4fr;gap:6px;padding:6px 14px;background:#060c18;}
+.gc{background:#080f1e;border:1px solid rgba(255,255,255,.06);border-radius:9px;display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:5px 3px;transition:border-color .2s,transform .2s;position:relative;}
+.gc:hover{transform:translateY(-2px);border-color:rgba(0,180,245,.35);}
+.gc.open{border-color:rgba(0,180,245,.4);}
+.gsvg{width:40px;height:40px;flex-shrink:0;}
+.gtrk{fill:none;stroke:rgba(255,255,255,.06);stroke-width:5;}
+.gfil{fill:none;stroke:#1ab8f5;stroke-width:5;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset 1.4s cubic-bezier(.16,.84,.44,1);}
+.gico{position:absolute;top:5px;left:0;right:0;height:40px;display:flex;align-items:center;justify-content:center;color:#1ab8f5;}
+.gico svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.gval{font-size:9px;font-weight:700;color:#1ab8f5;line-height:1;margin-top:1px;}
+.glbl{font-size:8px;color:#364a5c;text-align:center;line-height:1.2;margin-top:1px;}
+.gdet{font-size:8px;color:#364a5c;text-align:center;max-height:0;overflow:hidden;opacity:0;transition:max-height .25s,opacity .2s,margin-top .25s;}
+.gc.open .gdet{max-height:32px;opacity:1;margin-top:2px;}
+.cta{background:rgba(26,184,245,.08);border:1px solid rgba(45,207,170,.3);border-radius:9px;padding:5px 10px;display:flex;align-items:center;justify-content:center;text-align:center;}
+.cta p{font-size:9px;font-weight:600;color:#dde5ef;line-height:1.3;}
+.cta p small{display:block;font-family:'JetBrains Mono',monospace;font-size:8px;color:#2dcfaa;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;font-weight:400;}
+.tip{position:absolute;background:#0d1e30;border:1px solid rgba(255,255,255,.11);border-radius:8px;padding:7px 9px;font-size:9px;color:#8aa0b5;max-width:170px;pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity .16s,transform .16s;z-index:50;line-height:1.4;}
+.tip.on{opacity:1;transform:none;}
+.tip b{display:block;font-size:10px;font-weight:600;color:#dde5ef;margin-bottom:2px;}
+.hs{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:transparent;cursor:pointer;border:none;z-index:10;}
+.fdash{stroke-dasharray:3 6;animation:da 1.3s linear infinite;}
+@keyframes da{to{stroke-dashoffset:-18}}
+.jit{animation:jt 3.5s ease-in-out infinite;}
+@keyframes jt{0%,100%{transform:translate(0,0)}28%{transform:translate(1.5px,-1.2px)}55%{transform:translate(-1.2px,1.5px)}78%{transform:translate(1.2px,1px)}}
+.setl{animation:stl 3s ease-in-out infinite;}
+@keyframes stl{0%,100%{opacity:.7}50%{opacity:1}}
+.cpls{animation:cp 2.2s ease-in-out infinite;}
+@keyframes cp{0%,100%{opacity:.45}50%{opacity:.95}}
+</style>
+
+<div class="canvas" id="root">
+  <header class="hdr">
+    <div class="hdr-l">
+      <div class="kicker"><span class="dot"></span>FCP Team · Internal showcase</div>
+      <div class="htitle">AI<em>*</em>mpact: Infrastructure in <em>Minutes</em></div>
+    </div>
+    <div class="hdr-r">
+      <div class="qblock">"What used to take days now takes ten minutes."</div>
+      <div class="stats">
+        <div class="st"><div class="stn">10<small>min</small></div><div class="stl">Onboarding</div></div>
+        <div class="st"><div class="stn">1,400<small>+</small></div><div class="stl">Issues gone</div></div>
+        <div class="st"><div class="stn">100<small>%</small></div><div class="stl">First-time win</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="col col-b" id="colB">
+      <span class="col-tag tag-b">Before · Chaos</span>
+      <svg class="col-svg" id="csvgB" viewBox="0 0 172 260" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+      <div id="layerB" style="position:absolute;inset:0;pointer-events:none;"></div>
+    </div>
+    <div class="col col-c" id="colC">
+      <span class="col-tag tag-c">Claude skill · Live</span>
+      <svg style="flex:1;width:100%;min-height:0;" id="csvgC" viewBox="0 0 336 260" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+      <div class="conv" id="conv" aria-live="polite"></div>
+    </div>
+    <div class="col col-a" id="colA">
+      <span class="col-tag tag-a">After · Order</span>
+      <svg class="col-svg" id="csvgA" viewBox="0 0 172 260" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+      <div id="layerA" style="position:absolute;inset:0;pointer-events:none;"></div>
+    </div>
+  </div>
+
+  <div class="circ" id="circ">
+    <div class="ceyebrow"><span class="ce1">How it works</span><span class="ce2">Six-step circuit</span></div>
+    <svg class="csvg" id="csvgP" viewBox="0 0 560 52" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const CHAOS=[
+  {x:60, y:62, l:'Crossplane rules',    d:'Deep expertise required just to file a routine request.'},
+  {x:118,y:55, l:'Config deps',         d:'One wrong field breaks everything — silently.'},
+  {x:38, y:138,l:'Documentation',       d:'Hours of wiki-reading before writing a single line of YAML.'},
+  {x:130,y:142,l:'Config mistakes',     d:'The same avoidable errors, repeated across every team.'},
+  {x:65, y:218,l:'1,400+ issues',       d:'A growing backlog of avoidable review failures since Jan 2025.'},
+  {x:125,y:218,l:'Expert drag',         d:'Senior engineers pulled into routine YAML fixes constantly.'},
+];
+const ORDER=[
+  {x:52, y:62, l:'10-min onboarding',   d:'One guided conversation replaces the documentation deep-dive.'},
+  {x:120,y:62, l:'Auto examples',       d:'Claude surfaces relevant working examples automatically.'},
+  {x:52, y:138,l:'Rules applied',       d:'Policy constraints and dependencies resolved for you.'},
+  {x:120,y:138,l:'Config generated',    d:'Valid Crossplane YAML written from the conversation.'},
+  {x:52, y:218,l:'Auto-validated',      d:'Checked against rules before ever reaching review.'},
+  {x:120,y:218,l:'Review-ready PR',     d:'Pull request opens automatically — near-zero corrections.'},
+];
+const PROC=[
+  {l:'Engineer starts',    d:'No lookup needed — conversation starts immediately.'},
+  {l:'Claude asks',        d:'Plain-language prompts replace schema knowledge.'},
+  {l:'Examples retrieved', d:'Relevant examples and policy rules surface automatically.'},
+  {l:'Config generated',   d:'Valid Crossplane YAML produced from the conversation.'},
+  {l:'Validated',          d:'Checked against all rules before reaching review.'},
+  {l:'PR created',         d:'Opens automatically — typically merged with little follow-up.'},
+];
+const GAUGES=[
+  {ico:'clock', pct:94, val:'Days→10m',  l:'Onboarding',     d:'One conversation, working request.'},
+  {ico:'shield',pct:100,val:'1,400+',    l:'Issues avoided',  d:'Structurally prevented since Jan 2025.'},
+  {ico:'target',pct:100,val:'1st try',   l:'New eng. success',d:'Zero experience, right first time.'},
+  {ico:'check', pct:97, val:'~Zero',     l:'PR corrections',  d:'Generated PRs need near-zero edits.'},
+  {ico:'zap',   pct:88, val:'Freed',     l:'Senior eng. time',d:'Back on architecture, not YAML.'},
+];
+const CONV=[
+  {w:'Engineer',e:true, t:'Postgres for payments-service — production.'},
+  {w:'Claude',  e:false,t:'Fetching examples, applying compliance rules…'},
+  {w:'Claude',  e:false,chk:true,t:'Examples retrieved'},
+  {w:'Claude',  e:false,chk:true,t:'Rules applied'},
+  {w:'Claude',  e:false,chk:true,t:'Config generated & validated'},
+  {w:'Claude',  e:false,chk:true,t:'PR #4821 opened — review-ready'},
+];
+const ICOPATH={
+  clock:`<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>`,
+  shield:`<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>`,
+  target:`<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>`,
+  check:`<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`,
+  zap:`<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`,
+};
+const NS='http://www.w3.org/2000/svg';
+function sv(t,a){const n=document.createElementNS(NS,t);for(const k in a)n.setAttribute(k,a[k]);return n;}
+function he(h){const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild;}
+
+(function buildChaos(){
+  const svg=document.getElementById('csvgB');
+  const pairs=[[0,1],[0,2],[0,3],[1,3],[1,4],[2,3],[2,4],[3,5],[4,5],[1,5],[0,4]];
+  pairs.forEach(([a,b])=>{const l=sv('line',{x1:CHAOS[a].x,y1:CHAOS[a].y,x2:CHAOS[b].x,y2:CHAOS[b].y,stroke:'#b03028','stroke-width':'1',opacity:'.2'});l.classList.add('fdash');svg.appendChild(l);});
+  CHAOS.forEach((n,i)=>{
+    const g=sv('g',{});g.classList.add('jit');g.style.cssText=`animation-delay:${i*.2}s;transform-origin:${n.x}px ${n.y}px`;
+    const rp=sv('circle',{cx:n.x,cy:n.y,r:'18',fill:'none',stroke:'#d04848','stroke-width':'.8',opacity:'.1'});
+    [sv('animate',{attributeName:'r',values:'12;20;12',dur:'2.4s',begin:`${i*.35}s`,repeatCount:'indefinite'}),sv('animate',{attributeName:'opacity',values:'.1;0;.1',dur:'2.4s',begin:`${i*.35}s`,repeatCount:'indefinite'})].forEach(a=>rp.appendChild(a));
+    const ro=sv('circle',{cx:n.x,cy:n.y,r:'12',fill:'rgba(180,44,38,.12)',stroke:'#b03028','stroke-width':'1.1',opacity:'.9'});
+    const ri=sv('circle',{cx:n.x,cy:n.y,r:'3.5',fill:'#d85048'});
+    [rp,ro,ri].forEach(c=>g.appendChild(c));svg.appendChild(g);
+  });
+})();
+
+(function buildOrder(){
+  const svg=document.getElementById('csvgA');
+  [[52,62,120,62],[52,138,120,138],[52,218,120,218],[52,62,52,218],[120,62,120,218]].forEach(([x1,y1,x2,y2])=>svg.appendChild(sv('line',{x1,y1,x2,y2,stroke:'#2dcfaa',opacity:'.2','stroke-width':'1'})));
+  ORDER.forEach((n,i)=>{
+    const g=sv('g',{});g.classList.add('setl');g.style.animationDelay=`${i*.25}s`;
+    [sv('circle',{cx:n.x,cy:n.y,r:'17',fill:'rgba(45,207,170,.08)',stroke:'none'}),sv('circle',{cx:n.x,cy:n.y,r:'11',fill:'rgba(45,207,170,.13)',stroke:'#2dcfaa','stroke-width':'1.1'}),sv('path',{d:`M${n.x-4.5},${n.y} l3,3.5 l6.5,-7.5`,stroke:'#2dcfaa','stroke-width':'1.8',fill:'none','stroke-linecap':'round','stroke-linejoin':'round'})].forEach(c=>g.appendChild(c));
+    svg.appendChild(g);
+  });
+})();
+
+(function buildPipe(){
+  const svg=document.getElementById('csvgC');
+  svg.innerHTML=`<path d="M0,130 C54,130 96,130 158,130" stroke="#b03028" stroke-width="1.5" fill="none" opacity=".55" class="fdash"/><path d="M178,130 C242,130 282,130 336,130" stroke="#2dcfaa" stroke-width="1.5" fill="none" opacity=".55" class="fdash"/><circle cx="168" cy="130" r="30" fill="rgba(0,184,245,.05)" class="cpls"/><circle cx="168" cy="130" r="22" fill="rgba(0,184,245,.09)" stroke="#1ab8f5" stroke-width="1.2"/><circle cx="168" cy="130" r="14" fill="rgba(0,184,245,.14)" stroke="#1ab8f5" stroke-width=".6" opacity=".7"/><text x="168" y="127" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="500" fill="#1ab8f5">CLAUDE</text><text x="168" y="137" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="6" fill="rgba(26,184,245,.5)">infra-order</text>
+  <circle r="2.5" fill="#d85048"><animateMotion dur="2.2s" repeatCount="indefinite" path="M0,130 C54,130 96,130 158,130"/></circle>
+  <circle r="2.5" fill="#d85048" opacity=".6"><animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite" path="M0,130 C54,130 96,130 158,130"/></circle>
+  <circle r="2.5" fill="#2dcfaa"><animateMotion dur="2s" begin=".5s" repeatCount="indefinite" path="M178,130 C242,130 282,130 336,130"/></circle>
+  <circle r="2.5" fill="#2dcfaa" opacity=".6"><animateMotion dur="2s" begin="1.6s" repeatCount="indefinite" path="M178,130 C242,130 282,130 336,130"/></circle>`;
+})();
+
+let active=null;
+function showTip(tip){if(active&&active!==tip)active.classList.remove('on');tip.classList.toggle('on');active=tip.classList.contains('on')?tip:null;}
+function placeHS(svgId,layerId,nodes){
+  const svg=document.getElementById(svgId),layer=document.getElementById(layerId);
+  function go(){
+    layer.innerHTML='';
+    const vb=svg.viewBox.baseVal,sr=svg.getBoundingClientRect(),pr=svg.closest('.col').getBoundingClientRect();
+    const sc=Math.min(sr.width/vb.width,sr.height/vb.height);
+    const ox=(sr.width-vb.width*sc)/2,oy=(sr.height-vb.height*sc)/2;
+    nodes.forEach(n=>{
+      const px=(sr.left-pr.left)+ox+n.x*sc,py=(sr.top-pr.top)+oy+n.y*sc;
+      const btn=document.createElement('button');btn.className='hs';btn.style.cssText=`left:${px}px;top:${py}px;pointer-events:auto;`;btn.setAttribute('aria-label',n.l);
+      const tip=document.createElement('div');tip.className='tip';
+      const tl=Math.max(2,Math.min(px+14,pr.width-176));const tt=Math.max(2,py-56);
+      tip.style.cssText=`left:${tl}px;top:${tt}px;`;tip.innerHTML=`<b>${n.l}</b>${n.d}`;
+      btn.addEventListener('click',()=>showTip(tip));btn.addEventListener('mouseenter',()=>tip.classList.add('on'));btn.addEventListener('mouseleave',()=>{if(active!==tip)tip.classList.remove('on');});
+      layer.appendChild(btn);layer.appendChild(tip);
+    });
+  }
+  go();window.addEventListener('resize',go);
+}
+requestAnimationFrame(()=>setTimeout(()=>{placeHS('csvgB','layerB',CHAOS);placeHS('csvgA','layerA',ORDER);},60));
+
+const convEl=document.getElementById('conv');let ci=0;
+function tick(){
+  if(ci>=CONV.length){setTimeout(()=>{convEl.innerHTML='';ci=0;tick();},2600);return;}
+  const l=CONV[ci];
+  const row=he(`<div class="msg"><span class="who ${l.e?'who-e':'who-c'}">${l.w}</span><span class="mtxt">${l.chk?`<span class="chk"><svg viewBox="0 0 24 24" width="10" height="10" stroke="#2dcfaa" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>${l.t}</span>`:l.t}</span></div>`);
+  convEl.appendChild(row);convEl.scrollTop=convEl.scrollHeight;requestAnimationFrame(()=>row.classList.add('in'));ci++;setTimeout(tick,l.chk?580:1000);
+}
+tick();
+
+(function buildCircuit(){
+  const svg=document.getElementById('csvgP');
+  const W=560,px=30,y=20,step=(W-px*2)/(PROC.length-1);
+  const pts=PROC.map((_,i)=>({x:px+step*i,y}));
+  let path=`M${pts[0].x},${pts[0].y}`;pts.slice(1).forEach(p=>path+=` L${p.x},${p.y}`);
+  svg.innerHTML=`<path d="${path}" stroke="#1ab8f5" stroke-width="1.2" fill="none" opacity=".28" class="fdash"/>
+  ${pts.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="10" fill="rgba(0,184,245,.11)" stroke="#1ab8f5" stroke-width="1.1"/><text x="${p.x}" y="${p.y+4}" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="9" fill="#1ab8f5">${i+1}</text><text x="${p.x}" y="${p.y+20}" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-size="7" fill="#2a3d50">${PROC[i].l.split(' ').slice(0,2).join(' ')}</text>`).join('')}
+  <circle r="2.5" fill="#2dcfaa"><animateMotion dur="5s" repeatCount="indefinite" path="${path}"/></circle>`;
+
+  function pc(){
+    document.querySelectorAll('.c-hs,.c-tip').forEach(n=>n.remove());
+    const sr=svg.getBoundingClientRect(),pr=document.getElementById('circ').getBoundingClientRect();
+    const sc=Math.min(sr.width/W,sr.height/52);const ox=(sr.width-W*sc)/2,oy=(sr.height-52*sc)/2;
+    pts.forEach((p,i)=>{
+      const px2=(sr.left-pr.left)+ox+p.x*sc,py2=(sr.top-pr.top)+oy+p.y*sc;
+      const btn=document.createElement('button');btn.className='hs c-hs';btn.style.cssText=`position:absolute;left:${px2}px;top:${py2}px;`;btn.setAttribute('aria-label',PROC[i].l);
+      const tip=document.createElement('div');tip.className='tip c-tip';
+      const tl=Math.max(2,Math.min(px2-70,pr.width-176));tip.style.cssText=`position:absolute;left:${tl}px;top:${py2-52}px;`;tip.innerHTML=`<b>Step ${i+1}: ${PROC[i].l}</b>${PROC[i].d}`;
+      btn.addEventListener('click',()=>showTip(tip));btn.addEventListener('mouseenter',()=>tip.classList.add('on'));btn.addEventListener('mouseleave',()=>{if(active!==tip)tip.classList.remove('on');});
+      document.getElementById('circ').appendChild(btn);document.getElementById('circ').appendChild(tip);
+    });
+  }
+  requestAnimationFrame(()=>setTimeout(pc,80));window.addEventListener('resize',()=>setTimeout(pc,80));
+})();
+
+const foot=document.getElementById('foot');const RG=16,CG=2*Math.PI*RG;
+GAUGES.forEach(g=>{
+  const c=he(`<button class="gc" type="button"><div style="position:relative;width:40px;height:40px;flex-shrink:0;"><svg class="gsvg" viewBox="0 0 40 40"><circle class="gtrk" cx="20" cy="20" r="${RG}"/><circle class="gfil" cx="20" cy="20" r="${RG}" stroke-dasharray="${CG}" stroke-dashoffset="${CG}"/></svg><div class="gico"><svg viewBox="0 0 24 24">${ICOPATH[g.ico]}</svg></div></div><div class="gval">${g.val}</div><div class="glbl">${g.l}</div><div class="gdet">${g.d}</div></button>`);
+  c.addEventListener('click',()=>c.classList.toggle('open'));foot.appendChild(c);
+  setTimeout(()=>{c.querySelector('.gfil').style.strokeDashoffset=String(CG*(1-g.pct/100));},400);
+});
+foot.appendChild(he(`<div class="cta"><p>"From docs marathon to guided conversation."<small>Order infrastructure in minutes · FCP × Claude</small></p></div>`));
+
+document.addEventListener('click',e=>{if(!e.target.closest('.hs,.tip,.c-hs,.c-tip')){document.querySelectorAll('.tip.on').forEach(t=>t.classList.remove('on'));active=null;}});
+</script>
