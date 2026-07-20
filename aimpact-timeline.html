@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI*mpact Journey — Timeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #14092B;
+    --bg-mid:    #1E1140;
+    --magenta:   #FF7AE8;
+    --violet:    #A47BFF;
+    --cobalt:    #6FA0FF;
+    --text-dim:  rgba(255,255,255,0.84);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: #fff;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── BACKGROUND ─────────────────────────────────── */
+  .bg-ambient {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 55% at 15% 80%, rgba(255,122,232,0.22) 0%, transparent 62%),
+      radial-gradient(ellipse 60% 50% at 85% 20%, rgba(111,160,255,0.20) 0%, transparent 62%),
+      radial-gradient(ellipse 55% 45% at 50% 45%, rgba(164,123,255,0.18) 0%, transparent 70%),
+      var(--bg);
+  }
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.45;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 20%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 20%, transparent 80%);
+  }
+
+  /* ─── HEADING ────────────────────────────────────── */
+  .timeline-heading { text-align: center; padding: 44px 24px 0; position: relative; z-index: 2; }
+  .timeline-heading h1 {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400; font-style: italic;
+    font-size: clamp(32px, 5vw, 58px);
+    letter-spacing: -0.02em; line-height: 1;
+    background: linear-gradient(100deg, #fff 0%, var(--magenta) 55%, var(--cobalt) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .timeline-heading .rule {
+    width: 72px; height: 1px; margin: 14px auto 0;
+    background: linear-gradient(90deg, transparent, var(--magenta), transparent);
+  }
+  .timeline-heading .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.26em; text-transform: uppercase;
+    color: rgba(255,255,255,0.58); margin-top: 14px;
+  }
+
+  /* ─── SCROLLER ───────────────────────────────────── */
+  .timeline-section { flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 1; }
+  .timeline-container {
+    overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--magenta) rgba(255,255,255,0.08);
+    padding: 56px 40px;
+    scroll-snap-type: x proximity;
+  }
+  .timeline-container::-webkit-scrollbar { height: 7px; }
+  .timeline-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.07); border-radius: 100px; margin: 0 40px; }
+  .timeline-container::-webkit-scrollbar-thumb { background: linear-gradient(90deg, var(--magenta), var(--cobalt)); border-radius: 100px; }
+
+  .timeline-track { position: relative; width: max-content; padding: 150px 90px; }
+
+  .timeline-line {
+    position: absolute; top: 50%; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--magenta) 3%, var(--violet) 35%, var(--cobalt) 68%, var(--magenta) 97%, transparent 100%);
+    box-shadow: 0 0 22px 2px rgba(255,122,232,0.45);
+  }
+  .timeline-line::after {
+    content: ''; position: absolute; top: -3px;
+    width: 90px; height: 8px; border-radius: 100px;
+    background: linear-gradient(90deg, transparent, #fff, transparent);
+    filter: blur(3px);
+    animation: spine-pulse 7s linear infinite;
+  }
+  @keyframes spine-pulse {
+    0% { left: -10%; opacity: 0; } 8% { opacity: 0.9; } 92% { opacity: 0.9; } 100% { left: 102%; opacity: 0; }
+  }
+
+  .year-marker {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    background: linear-gradient(160deg, #35205e, var(--bg-mid));
+    padding: 8px 20px;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.18em;
+    color: #FFE4FA; z-index: 4;
+    box-shadow: 0 0 26px rgba(255,122,232,0.45), inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+
+  /* ─── ITEMS ──────────────────────────────────────── */
+  .timeline-items { display: flex; gap: 34px; position: relative; align-items: center; }
+
+  .tl-item {
+    flex-shrink: 0;
+    width: 222px;
+    position: relative;
+    z-index: 1;
+    display: flex; flex-direction: column; align-items: stretch;
+    transition: width 0.45s cubic-bezier(.2,.9,.25,1);
+  }
+  .tl-item.top    { transform: translateY(-120px); }
+  .tl-item.bottom { transform: translateY(120px); }
+  .tl-item.top > .card-wrap  { order: 1; }
+  .tl-item.top > .connector  { order: 2; }
+  .tl-item.top > .dot        { order: 3; }
+  .tl-item.bottom > .dot     { order: 1; }
+  .tl-item.bottom > .connector { order: 2; }
+  .tl-item.bottom > .card-wrap { order: 3; }
+
+  /* GENUINE ENLARGEMENT — the item and card grow in real layout size */
+  .tl-item.is-open { width: 372px; z-index: 80; }
+
+  /* ─── BACKLIGHT ──────────────────────────────────── */
+  .card-wrap { position: relative; }
+  .backlight {
+    position: absolute;
+    inset: -30px;
+    border-radius: 40px;
+    background: radial-gradient(ellipse at center,
+      rgba(255,122,232,0.42) 0%,
+      rgba(164,123,255,0.30) 35%,
+      rgba(111,160,255,0.16) 58%,
+      transparent 75%);
+    filter: blur(26px);
+    opacity: 0.30;
+    z-index: 0;
+    pointer-events: none;
+    transition: opacity 0.45s ease, inset 0.45s ease, filter 0.45s ease;
+  }
+  .card-wrap:hover .backlight { opacity: 0.72; }
+  .tl-item.is-open .backlight {
+    inset: -58px;
+    opacity: 1;
+    filter: blur(40px);
+    animation: backlight-breathe 3.4s ease-in-out infinite;
+  }
+  @keyframes backlight-breathe {
+    0%, 100% { opacity: 0.85; }
+    50%      { opacity: 1; }
+  }
+
+  /* ─── METALLIC CARD ──────────────────────────────── */
+  .tl-item-content {
+    position: relative;
+    z-index: 2;
+    border-radius: 13px;
+    padding: 17px 19px;
+    cursor: pointer;
+    /* brushed-metal base: layered gradients + specular top edge */
+    background:
+      linear-gradient(160deg,
+        rgba(255,255,255,0.30) 0%,
+        rgba(255,255,255,0.10) 18%,
+        rgba(255,255,255,0.045) 42%,
+        rgba(255,255,255,0.02) 62%,
+        rgba(255,255,255,0.10) 88%,
+        rgba(255,255,255,0.22) 100%),
+      linear-gradient(75deg,
+        rgba(255,122,232,0.14) 0%,
+        rgba(164,123,255,0.06) 40%,
+        rgba(111,160,255,0.14) 100%);
+    border: 1px solid rgba(255,255,255,0.30);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.62),
+      inset 0 -1px 0 rgba(255,255,255,0.16),
+      inset 0 0 24px rgba(255,255,255,0.05),
+      0 10px 30px rgba(0,0,0,0.45);
+    backdrop-filter: blur(10px) saturate(1.3);
+    -webkit-backdrop-filter: blur(10px) saturate(1.3);
+    transition:
+      padding 0.45s cubic-bezier(.2,.9,.25,1),
+      border-color 0.35s ease,
+      box-shadow 0.35s ease,
+      transform 0.35s cubic-bezier(.2,1,.3,1);
+  }
+
+  /* Moving specular highlight that tracks the cursor */
+  .metal-sheen {
+    position: absolute; inset: 0; border-radius: 13px;
+    overflow: hidden; pointer-events: none; z-index: 1;
+  }
+  .metal-sheen::before {
+    content: '';
+    position: absolute; inset: -40%;
+    background: radial-gradient(circle 130px at var(--mx, 50%) var(--my, 0%),
+      rgba(255,255,255,0.42) 0%,
+      rgba(255,255,255,0.12) 35%,
+      transparent 65%);
+    opacity: 0; transition: opacity 0.3s ease;
+  }
+  .tl-item-content:hover .metal-sheen::before { opacity: 1; }
+  /* Static diagonal polish streak — reads as machined metal */
+  .metal-sheen::after {
+    content: '';
+    position: absolute; top: -60%; left: -30%;
+    width: 45%; height: 220%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
+    transform: rotate(18deg);
+    transition: left 0.75s cubic-bezier(.3,0,.2,1);
+  }
+  .tl-item-content:hover .metal-sheen::after { left: 100%; }
+
+  /* Faint scanlines for the tech read */
+  .scanline {
+    position: absolute; inset: 0; border-radius: 13px;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 4px);
+    opacity: 0.5; pointer-events: none; z-index: 1;
+  }
+
+  /* HUD corners */
+  .corner {
+    position: absolute; width: 13px; height: 13px;
+    border: 1.5px solid rgba(255,255,255,0.9);
+    opacity: 0; z-index: 3; pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .corner.tl { top: -5px; left: -5px;  border-right: 0; border-bottom: 0; border-radius: 4px 0 0 0; }
+  .corner.tr { top: -5px; right: -5px; border-left: 0;  border-bottom: 0; border-radius: 0 4px 0 0; }
+  .corner.bl { bottom: -5px; left: -5px;  border-right: 0; border-top: 0; border-radius: 0 0 0 4px; }
+  .corner.br { bottom: -5px; right: -5px; border-left: 0;  border-top: 0; border-radius: 0 0 4px 0; }
+  .tl-item-content:hover .corner, .tl-item.is-open .corner { opacity: 1; }
+  .tl-item-content:hover .corner.tl { transform: translate(-3px,-3px); }
+  .tl-item-content:hover .corner.tr { transform: translate(3px,-3px); }
+  .tl-item-content:hover .corner.bl { transform: translate(-3px,3px); }
+  .tl-item-content:hover .corner.br { transform: translate(3px,3px); }
+
+  .tl-item-content:hover {
+    border-color: rgba(255,255,255,0.62);
+    transform: translateY(-6px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.8),
+      inset 0 -1px 0 rgba(255,255,255,0.22),
+      0 18px 44px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(255,122,232,0.4);
+  }
+
+  /* Click ripple */
+  .ripple {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.75) 0%, rgba(255,122,232,0.4) 40%, transparent 70%);
+    transform: translate(-50%,-50%) scale(0);
+    pointer-events: none; z-index: 4;
+    animation: ripple-out 0.75s cubic-bezier(.2,.7,.3,1) forwards;
+  }
+  @keyframes ripple-out { to { transform: translate(-50%,-50%) scale(1); opacity: 0; } }
+
+  /* ─── TEXT ───────────────────────────────────────── */
+  .year-tag, .name, .desc { position: relative; z-index: 3; }
+  .year-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.2em;
+    color: #FFD4F5; margin-bottom: 8px;
+    transition: font-size 0.45s ease;
+  }
+  .name {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px; line-height: 1.2; color: #fff; margin-bottom: 8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    transition: font-size 0.45s ease, margin 0.45s ease;
+  }
+  .name em {
+    font-style: italic;
+    background: linear-gradient(90deg, #fff, var(--magenta), var(--cobalt));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .desc {
+    font-size: 12px; color: var(--text-dim); line-height: 1.55;
+    transition: font-size 0.45s ease, line-height 0.45s ease;
+  }
+
+  /* ─── OPEN STATE ─────────────────────────────────── */
+  .tl-item.is-open .tl-item-content {
+    padding: 30px 32px;
+    border-color: rgba(255,255,255,0.85);
+    transform: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      inset 0 -1px 0 rgba(255,255,255,0.3),
+      inset 0 0 40px rgba(255,255,255,0.07),
+      0 30px 70px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(255,255,255,0.5);
+  }
+  .tl-item.is-open .year-tag { font-size: 13px; margin-bottom: 12px; }
+  .tl-item.is-open .name     { font-size: 30px; margin-bottom: 14px; }
+  .tl-item.is-open .desc     { font-size: 16.5px; line-height: 1.6; color: #fff; }
+
+  .close-hint {
+    display: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-top: 16px; position: relative; z-index: 3;
+  }
+  .tl-item.is-open .close-hint { display: block; }
+
+  /* ─── DOT / CONNECTOR ────────────────────────────── */
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: linear-gradient(135deg, #fff, var(--magenta));
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--magenta), 0 0 18px rgba(255,122,232,0.85);
+    margin: 0 auto; position: relative; z-index: 2;
+    transition: all 0.3s;
+  }
+  .tl-item:hover .dot { transform: scale(1.35); box-shadow: 0 0 0 2px var(--magenta), 0 0 30px rgba(255,122,232,0.95); }
+  .tl-item.is-open .dot { background: #fff; animation: dot-pulse 1.6s ease-in-out infinite; }
+  @keyframes dot-pulse {
+    0%,100% { box-shadow: 0 0 0 2px var(--magenta), 0 0 18px rgba(255,122,232,0.9); }
+    50%     { box-shadow: 0 0 0 2px #fff, 0 0 44px rgba(255,122,232,1), 0 0 72px rgba(164,123,255,0.6); }
+  }
+  .connector {
+    width: 1px; height: 32px; margin: 0 auto; opacity: 0.65;
+    background: linear-gradient(to bottom, var(--magenta), var(--cobalt));
+    transition: opacity 0.3s;
+  }
+  .tl-item:hover .connector, .tl-item.is-open .connector { opacity: 1; }
+
+  /* ─── HINT ───────────────────────────────────────── */
+  .scroll-hint {
+    text-align: center; color: rgba(255,255,255,0.55);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 0 24px 28px; position: relative; z-index: 1;
+  }
+  .pulse { display: inline-block; color: var(--magenta); animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timeline-line::after, .ripple, .pulse, .backlight, .dot { animation: none !important; }
+  }
+
+  @media (max-width: 720px) {
+    .tl-item { width: 180px; }
+    .tl-item.is-open { width: 300px; }
+    .tl-item.top    { transform: translateY(-104px); }
+    .tl-item.bottom { transform: translateY(104px); }
+    .tl-item.is-open .name { font-size: 24px; }
+    .tl-item.is-open .desc { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-ambient"></div>
+<div class="bg-grid"></div>
+
+<header class="timeline-heading">
+  <h1>The Journey So Far</h1>
+  <div class="rule"></div>
+  <div class="sub">2026 &nbsp;&rarr;&nbsp; 2024 &nbsp;&middot;&nbsp; Click any milestone to enlarge</div>
+</header>
+
+<section class="timeline-section">
+  <div class="timeline-container" id="timeline-scroll">
+    <div class="timeline-track">
+      <div class="timeline-line"></div>
+
+      <div class="year-marker" style="left: 190px;">2026</div>
+      <div class="year-marker" style="left: 50%;">2025</div>
+      <div class="year-marker" style="right: 40px;">2024</div>
+
+      <div class="timeline-items">
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2026</div>
+            <div class="name">Agentic Executive Summary</div>
+            <div class="desc">Documents become briefings. Briefings become decisions. The newest milestone.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2026</div>
+            <div class="name">IT Change Coach</div>
+            <div class="desc">Guides change requests through the right reviewers &mdash; and shorter queues.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2026</div>
+            <div class="name">AI-Powered A1 Migration</div>
+            <div class="desc">Hundreds of touchpoints, one new identity, six weeks. Quietly done.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2026</div>
+            <div class="name">Accelerating Digital Resistance</div>
+            <div class="desc">Resilience controls that finally run themselves &mdash; and let auditors sleep.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name">I2I Frank Wiemer</div>
+            <div class="desc">A keystone I2I implementation &mdash; production-grade, business-owned.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name">Automated Defect Analysis</div>
+            <div class="desc">Defects get classified, routed, and triaged before standup begins.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name">Iberolatam Engagement</div>
+            <div class="desc">The program crosses an ocean &mdash; and the playbook crosses with it.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name"><em>J.A.M.E.S</em></div>
+            <div class="desc">Joint Account Management &amp; Enabling Support &mdash; the first agent that earned its acronym.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name">Confluence Page Analyzer</div>
+            <div class="desc">Surfaces stale docs and contradictions before they cost someone an hour.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name">Release Aufbau</div>
+            <div class="desc">Release notes assemble themselves from the work that actually shipped.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name">AzPMarketplace</div>
+            <div class="desc">Internal marketplace for shared AI capabilities &mdash; discoverable, reusable, owned.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name">Grafana Alert Quick Sender</div>
+            <div class="desc">From &ldquo;I see something&rdquo; to &ldquo;the right team knows&rdquo; in one click.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name">Claude Bot Integration</div>
+            <div class="desc">Claude finds a home in the workflows colleagues already live in.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2025</div>
+            <div class="name">Automated Incident Mailer</div>
+            <div class="desc">The right people learn the right thing without anyone forwarding the email.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">AI Sprint Reporter</div>
+            <div class="desc">Turns sprint data into a narrative the whole team can read in 90 seconds.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">Pipeline Performance Monitoring</div>
+            <div class="desc">Knows which builds are slow before the team complains.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name"><em>LOGA</em></div>
+            <div class="desc">The log-analysis tool that would become LOGA-AI &mdash; and end an era of grep.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">AI Maturity Meter</div>
+            <div class="desc">A self-assessment that gives teams an honest read on where they stand.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">GitHub Org Search</div>
+            <div class="desc">Find the right repo, file, or function across the entire organization in one query.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">Power BI Semantic Agent</div>
+            <div class="desc">Asks the data model the questions analysts used to ask each other.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">DB2 Error Monitoring</div>
+            <div class="desc">Catches the failures before the on-call pager does.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">Agile Analytics Hub</div>
+            <div class="desc">One place for sprint health, velocity, and the metrics teams actually trust.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">Power BI &rarr; Oracle SQL</div>
+            <div class="desc">Auto-translator that ended a long-running tax on the analytics team.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="tl-item bottom">
+        <div class="dot"></div>
+        <div class="connector"></div>
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">Phone Invoice Processing</div>
+            <div class="desc">The first production workflow that paid for its own development inside a quarter.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item top">
+        <div class="card-wrap">
+          <div class="backlight"></div>
+          <div class="tl-item-content">
+            <div class="metal-sheen"></div>
+            <div class="scanline"></div>
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="year-tag">2024</div>
+            <div class="name">AI Launchpad</div>
+            <div class="desc">Spec-driven development takes off &mdash; the program's first published methodology.</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="dot"></div>
+      </div>
+      </div><!-- /timeline-items -->
+    </div><!-- /timeline-track -->
+  </div><!-- /timeline-container -->
+
+  <div class="scroll-hint">
+    <span class="pulse">&larr;</span>&nbsp;&nbsp;NEWEST FIRST &middot; SCROLL BACK THROUGH TIME&nbsp;&nbsp;<span class="pulse">&rarr;</span>
+  </div>
+</section>
+
+<script>
+  const scroller = document.getElementById('timeline-scroll');
+
+  // Add the close hint to every card
+  document.querySelectorAll('.tl-item-content').forEach(card => {
+    const hint = document.createElement('div');
+    hint.className = 'close-hint';
+    hint.textContent = 'Click to collapse';
+    card.appendChild(hint);
+    card.setAttribute('tabindex', '0');
+  });
+
+  function closeAll() {
+    document.querySelectorAll('.tl-item.is-open').forEach(i => i.classList.remove('is-open'));
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft')  scroller.scrollBy({ left: -320, behavior: 'smooth' });
+    if (e.key === 'ArrowRight') scroller.scrollBy({ left:  320, behavior: 'smooth' });
+    if (e.key === 'Escape') closeAll();
+  });
+
+  document.querySelectorAll('.tl-item-content').forEach(card => {
+    const item = card.closest('.tl-item');
+
+    card.addEventListener('click', (e) => {
+      // ripple from the exact click point
+      const rect = card.getBoundingClientRect();
+      const r = document.createElement('span');
+      r.className = 'ripple';
+      const size = Math.max(rect.width, rect.height) * 2.4;
+      r.style.width = r.style.height = size + 'px';
+      r.style.left = (e.clientX - rect.left) + 'px';
+      r.style.top  = (e.clientY - rect.top) + 'px';
+      card.appendChild(r);
+      setTimeout(() => r.remove(), 760);
+
+      const wasOpen = item.classList.contains('is-open');
+      closeAll();
+      if (!wasOpen) {
+        item.classList.add('is-open');
+        // keep the enlarged card in view after it grows
+        setTimeout(() => {
+          item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }, 120);
+      }
+    });
+
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+    });
+
+    // Specular highlight follows the cursor across the metal
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const sheen = card.querySelector('.metal-sheen');
+      sheen.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + '%');
+      sheen.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + '%');
+    });
+  });
+
+  scroller.scrollLeft = 0;
+</script>
+</body>
+</html>
