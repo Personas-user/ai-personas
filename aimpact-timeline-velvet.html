@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI*mpact Journey — Timeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Velvet Sensation base — medium-dark, not pitch-black */
+    --bg:          #1A1233;   /* deep indigo-violet */
+    --bg-mid:      #241847;   /* elevated surface for year chips */
+    --surface:     rgba(139,92,246,0.10);
+    --surface-hov: rgba(236,72,153,0.16);
+
+    /* Velvet Sensation accents – sampled from the image */
+    --magenta:     #EC4899;   /* hot pink / fuchsia */
+    --violet:      #8B5CF6;   /* electric violet */
+    --cobalt:      #3B82F6;   /* bright cobalt blue */
+    --pink-soft:   rgba(236,72,153,0.55);
+    --violet-soft: rgba(139,92,246,0.55);
+
+    /* Derived utilities */
+    --line:        rgba(236,72,153,0.25);
+    --muted:       rgba(237,232,245,0.62);
+    --dot-glow:    rgba(236,72,153,0.9);
+
+    /* Text — light lavender against velvet dark */
+    --ink:         #EDE8F5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── AMBIENT BG — velvet sensation flow ─────────── */
+  .bg-ambient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      /* the pink pool bottom-left */
+      radial-gradient(ellipse 55% 45% at 8% 92%, rgba(236,72,153,0.38) 0%, transparent 62%),
+      /* violet wave sweeping middle-right */
+      radial-gradient(ellipse 70% 50% at 82% 62%, rgba(139,92,246,0.32) 0%, transparent 65%),
+      /* cobalt haze top-right */
+      radial-gradient(ellipse 55% 45% at 88% 22%, rgba(59,130,246,0.22) 0%, transparent 60%),
+      /* subtle violet lift center */
+      radial-gradient(ellipse 60% 45% at 45% 50%, rgba(139,92,246,0.14) 0%, transparent 70%),
+      var(--bg);
+  }
+
+  /* ─── TIMELINE WRAPPER ───────────────────────────── */
+  .timeline-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── SCROLL CONTAINER ───────────────────────────── */
+  .timeline-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--magenta) rgba(237,232,245,0.08);
+    padding: 72px 40px 72px;
+    scroll-snap-type: x proximity;
+  }
+  .timeline-container::-webkit-scrollbar { height: 6px; }
+  .timeline-container::-webkit-scrollbar-track {
+    background: rgba(237,232,245,0.06);
+    border-radius: 100px;
+    margin: 0 40px;
+  }
+  .timeline-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, var(--magenta), var(--violet));
+    border-radius: 100px;
+  }
+
+  /* ─── TRACK ──────────────────────────────────────── */
+  .timeline-track {
+    position: relative;
+    width: max-content;
+    padding: 120px 80px;
+  }
+
+  /* Central spine */
+  .timeline-line {
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      var(--magenta) 3%,
+      rgba(139,92,246,0.85) 30%,
+      rgba(59,130,246,0.85) 60%,
+      var(--magenta) 97%,
+      transparent 100%);
+    box-shadow: 0 0 22px 1px rgba(236,72,153,0.42);
+  }
+  .timeline-line::before,
+  .timeline-line::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 10px; height: 10px;
+    transform: translateY(-50%);
+    background: var(--magenta);
+    border-radius: 50%;
+    box-shadow: 0 0 16px 4px rgba(236,72,153,0.85);
+  }
+  .timeline-line::before { left: -5px; }
+  .timeline-line::after  { right: -5px; }
+
+  /* ─── YEAR / MONTH MARKERS ───────────────────────── */
+  .year-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-mid);
+    padding: 7px 18px;
+    border: 1px solid var(--magenta);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--magenta);
+    z-index: 3;
+    box-shadow: 0 0 22px rgba(236,72,153,0.35), inset 0 0 10px rgba(236,72,153,0.10);
+  }
+
+  /* ─── ITEMS ──────────────────────────────────────── */
+  .timeline-items {
+    display: flex;
+    gap: 32px;
+    position: relative;
+    align-items: center;
+  }
+
+  .tl-item {
+    flex-shrink: 0;
+    width: 210px;
+    position: relative;
+    scroll-snap-align: start;
+  }
+
+  .tl-item-content {
+    background: linear-gradient(135deg,
+      #2A1D4E 0%, #382566 18%, #2A1D4E 36%,
+      #3C2670 52%, #2A1D4E 70%, #3E2878 86%, #2A1D4E 100%);
+    background-size: 240% 240%;
+    border: 1px solid rgba(139,92,246,0.42);
+    border-radius: 10px;
+    padding: 15px 17px;
+    box-shadow:
+      inset 0 1px 0 rgba(237,232,245,0.10),
+      inset 0 -2px 5px rgba(0,0,0,0.28),
+      0 3px 12px rgba(0,0,0,0.35);
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s cubic-bezier(.2,.8,.2,1), border-color 0.35s;
+    animation: velvet-sheen 7s ease-in-out infinite;
+    cursor: pointer;
+  }
+  @keyframes velvet-sheen {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  .tl-item-content:hover {
+    border-color: var(--magenta);
+    transform: translateY(-4px);
+    box-shadow:
+      inset 0 1px 0 rgba(237,232,245,0.12),
+      0 12px 40px rgba(236,72,153,0.32),
+      0 0 0 1px rgba(236,72,153,0.45);
+  }
+
+  .tl-item .name {
+    font-family: 'Instrument Serif', serif;
+    font-size: 16px;
+    line-height: 1.25;
+    color: var(--ink);
+    margin-bottom: 7px;
+  }
+  .tl-item .name em {
+    font-style: italic;
+    background: linear-gradient(90deg, var(--magenta), var(--violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .tl-item .desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  /* Dot */
+  .tl-item .dot {
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--magenta), var(--violet));
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--magenta), 0 0 18px rgba(236,72,153,0.85);
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s;
+  }
+  .tl-item:hover .dot {
+    box-shadow: 0 0 0 1px var(--magenta), 0 0 28px var(--dot-glow);
+    transform: scale(1.2);
+  }
+
+  /* Connector */
+  .tl-item .connector {
+    width: 1px;
+    background: linear-gradient(to bottom, var(--magenta), var(--violet));
+    opacity: 0.5;
+    margin: 0 auto;
+    height: 28px;
+  }
+
+  /* Top / bottom alternation */
+  .tl-item.top {
+    display: flex; flex-direction: column; align-items: stretch;
+    transform: translateY(-105px);
+  }
+  .tl-item.bottom {
+    display: flex; flex-direction: column; align-items: stretch;
+    transform: translateY(105px);
+  }
+  .tl-item.top > .tl-item-content { order: 1; }
+  .tl-item.top > .connector       { order: 2; }
+  .tl-item.top > .dot             { order: 3; }
+  .tl-item.bottom > .dot          { order: 1; }
+  .tl-item.bottom > .connector    { order: 2; }
+  .tl-item.bottom > .tl-item-content { order: 3; }
+
+  /* ─── HEADING ────────────────────────────────────── */
+  .timeline-heading {
+    text-align: center;
+    padding: 48px 24px 0;
+    position: relative;
+    z-index: 1;
+  }
+  .timeline-heading h1 {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: clamp(32px, 5vw, 58px);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    background: linear-gradient(100deg, var(--ink) 0%, var(--magenta) 50%, var(--violet) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .timeline-heading .rule {
+    width: 60px;
+    height: 1px;
+    margin: 16px auto 0;
+    background: linear-gradient(90deg, transparent, var(--magenta), transparent);
+  }
+
+  /* ─── BOX ANIMATIONS ─────────────────────────────── */
+
+  /* Shimmer sweep on hover */
+  .tl-item-content {
+    position: relative;
+    overflow: hidden;
+  }
+  .tl-item-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgba(236,72,153,0.28) 50%,
+      rgba(139,92,246,0.20) 55%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: none;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .tl-item-content:hover::before {
+    animation: shimmer-sweep 0.55s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @keyframes shimmer-sweep {
+    to { transform: translateX(120%); }
+  }
+
+  /* Clicked / active state – pops up and stays enlarged until clicked again */
+  .tl-item-content.clicked {
+    position: relative;
+    z-index: 20;
+    transform: scale(1.32) translateY(-14px);
+    transform-origin: center;
+    border-color: var(--magenta);
+    box-shadow:
+      inset 0 1px 0 rgba(237,232,245,0.12),
+      0 0 0 1px rgba(236,72,153,0.6),
+      0 22px 50px rgba(0,0,0,0.55),
+      0 0 44px rgba(236,72,153,0.42);
+    animation: card-pop 0.45s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  .tl-item-content.clicked .name {
+    font-size: 19px;
+    background: linear-gradient(90deg, var(--ink), var(--magenta));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .tl-item-content.clicked .desc {
+    font-size: 12.5px;
+    color: rgba(237,232,245,0.82);
+  }
+  .tl-item.clicked-item .dot {
+    background: var(--ink);
+    box-shadow: 0 0 0 2px var(--magenta), 0 0 34px var(--dot-glow), 0 0 64px rgba(236,72,153,0.6);
+    animation: dot-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes card-pop {
+    0%   { transform: scale(1) translateY(0); }
+    55%  { transform: scale(1.4) translateY(-18px); }
+    100% { transform: scale(1.32) translateY(-14px); }
+  }
+  @keyframes dot-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px var(--magenta), 0 0 18px rgba(236,72,153,0.85); }
+    50%       { box-shadow: 0 0 0 2px var(--magenta), 0 0 38px rgba(236,72,153,1), 0 0 64px rgba(236,72,153,0.5); }
+  }
+  .tl-item.clicked-item {
+    position: relative;
+    z-index: 20;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tl-item-content { animation: none; }
+    .tl-item-content::before { display: none; }
+    .tl-item-content.clicked { animation: none; }
+    .tl-item-content.clicked .dot { animation: none; }
+  }
+
+  /* Ensure text sits above shimmer layer */
+  .tl-item .name,
+  .tl-item .desc { position: relative; z-index: 1; }
+
+  /* ─── SCROLL HINT ─────────────────────────────────── */
+  .scroll-hint {
+    text-align: center;
+    color: rgba(237,232,245,0.50);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0 24px 28px;
+    position: relative;
+    z-index: 1;
+  }
+  .pulse {
+    display: inline-block;
+    color: var(--magenta);
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.25; }
+    50%       { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+
+  /* ─── RESPONSIVE ──────────────────────────────────── */
+  @media (max-width: 720px) {
+    .tl-item { width: 170px; }
+    .tl-item.top  { transform: translateY(-90px); }
+    .tl-item.bottom { transform: translateY(90px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-ambient"></div>
+
+<!-- ========== HEADING ========== -->
+<header class="timeline-heading">
+  <h1>The Journey So Far</h1>
+  <div class="rule"></div>
+</header>
+
+<!-- ========== TIMELINE ONLY ========== -->
+<section class="timeline-section">
+  <div class="timeline-container" id="timeline-scroll">
+    <div class="timeline-track">
+      <div class="timeline-line"></div>
+
+
+      <div class="timeline-items">
+
+        <!-- ══════════ FEB 2026 ══════════ -->
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>ABS-D MCP Integration</em></div>
+            <div class="desc">Germany's core insurance backend opens up — no more custom APIs to reach it.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>Archy</em></div>
+            <div class="desc">Cloud ordering by conversation. 11,000+ hours reclaimed over three years.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>DR Resiliency Orchestration</em></div>
+            <div class="desc">Disaster recovery that runs itself — fast, compliant, in control.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>MCP Hub</em></div>
+            <div class="desc">One CLI to discover and install every MCP a developer might need.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>SC-EKS × Claude Code</em></div>
+            <div class="desc">Forty-four repos, one Claude. Two hundred and forty hours a year, gone.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>Syntax Sensei</em></div>
+            <div class="desc">Coding standards every AI assistant already knows how to follow.</div>
+          </div>
+        </div>
+
+        <!-- ══════════ APRIL 2026 ══════════ -->
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>Accelerating Digital Resilience</em></div>
+            <div class="desc">AWS Kiro + Claude cut vulnerability-fix effort by up to 80%.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>Agentic Executive Summary</em></div>
+            <div class="desc">A folder of files becomes a briefing — an hour a week, per person.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>AI4IT Iberolatam</em></div>
+            <div class="desc">The program crosses an ocean — a hundred people, one AI RUN wave.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>Automated Defect Analysis</em></div>
+            <div class="desc">Hackathon to production in ninety days. Bug triage that never sleeps.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>A1 Branding Migration</em></div>
+            <div class="desc">Hundreds of web apps, one new identity — migration at 2× speed.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>IT Change Coach</em></div>
+            <div class="desc">Agentic workflows walk IT changes through the right reviewers — and shorter queues.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>AI User Stories in JIRA</em></div>
+            <div class="desc">Prompt to draft in seconds. 30% less time on story writing.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+
+        <!-- ══════════ MAY 2026 ══════════ -->
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>AI Launchpad</em></div>
+            <div class="desc">Spec-driven development takes off — the program's first published methodology.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>AI Maturity Meter</em></div>
+            <div class="desc">A self-assessment that gives teams an honest read on where they stand.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>Auto PR Review</em></div>
+            <div class="desc">Thirty-rule checklist, run by Claude on every pull request. Reviewers stay in flow.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>GitHub Org Intelligence</em></div>
+            <div class="desc">Find the right repo, file, or function across the whole enterprise — in one query.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>LOGA-AI</em></div>
+            <div class="desc">Structured incident reports in under sixty seconds. 95% less investigation time.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>Power BI Semantic Agent</em></div>
+            <div class="desc">Asks the data model the questions analysts used to ask each other.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>The Bug Analyzer</em></div>
+            <div class="desc">Runs nightly across 1,000+ sources. Devs wake up to context, not chaos.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">Agile Analytics Hub</div>
+            <div class="desc">Twelve pages of live sprint intelligence — velocity, DORA, PI, all in one view.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name">Claude Code Marketplace</div>
+            <div class="desc">Internal marketplace for shared skills, commands, MCPs — discoverable, reusable.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">Confluence Intelligence Agent</div>
+            <div class="desc">Surfaces stale, thin, or duplicate pages before they cost someone an hour.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name">DB2 Error Monitoring</div>
+            <div class="desc">Collect, triage, and route — one pipeline replaces a daily 40-minute ritual.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">Grafana Alert Quick Sender</div>
+            <div class="desc">From "I see something" to "the right team knows" — in one click.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>J.A.M.E.S</em></div>
+            <div class="desc">Joint Account Management &amp; Enabling Support — the first agent that earned its acronym.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">Oracle Pipeline Monitor</div>
+            <div class="desc">Ask in plain language, get charts, summaries, and the bottlenecks you were missing.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name">Phone Invoice Processing</div>
+            <div class="desc">768 numbers, one Claude prompt — an entire month of manual work, gone.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">Power BI → Oracle SQL</div>
+            <div class="desc">Auto-translator that ended a long-running tax on the analytics team.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name">Release Aufbau</div>
+            <div class="desc">Release notes assemble themselves from the work that actually shipped.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">Scrum Sprint Reporter</div>
+            <div class="desc">One Claude command builds a full interactive sprint dashboard from JIRA.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+
+        <!-- ══════════ JUNE 2026 ══════════ -->
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>ABS Airwave Page Analysis</em></div>
+            <div class="desc">Six architectural layers traced by one command — days of work compressed to minutes.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>AgentHub</em></div>
+            <div class="desc">Agents ARE the team — discovery to build to harden, every change a reviewed PR.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>FCP Ordering Skill</em></div>
+            <div class="desc">A two-phase Claude dialogue produces review-ready Crossplane PRs. Featured at AZI India.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name"><em>JMonitor</em></div>
+            <div class="desc">Jenkins failures diagnosed in under a second — the team's memory finally shared.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name"><em>STRIDE CLI</em></div>
+            <div class="desc">Threat modeling from a design doc, one command. Security expertise, on tap.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">AI PI Dashboards</div>
+            <div class="desc">Twenty JQL queries become one live dashboard — sprint reviews in minutes, not hours.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name">Sprint Health &amp; Risk Audit</div>
+            <div class="desc">Spillover, silent collaborators, blocked work — a single honest read for every Scrum Master.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">Sprint Review Prep</div>
+            <div class="desc">Order the stories, connect the threads, retro included — one command away.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name">Jenkinsless JUnit</div>
+            <div class="desc">Pulls code, builds clean, runs the suite — the morning ritual disappears.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">Review Ghost</div>
+            <div class="desc">AI code review that mimics your team's real reviewers — taste, out of people's heads.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="tl-item bottom">
+          <div class="dot"></div>
+          <div class="connector"></div>
+          <div class="tl-item-content">
+            <div class="name">Snowflake Intelligence</div>
+            <div class="desc">Chat with the warehouse. Engineers and analysts finally speak the same language.</div>
+          </div>
+        </div>
+        <div class="tl-item top">
+          <div class="tl-item-content">
+            <div class="name">Team KB</div>
+            <div class="desc">Team knowledge bases that grow themselves. Onboarding weeks become days.</div>
+          </div>
+          <div class="connector"></div>
+          <div class="dot"></div>
+        </div>
+
+      </div><!-- /timeline-items -->
+    </div><!-- /timeline-track -->
+  </div><!-- /timeline-container -->
+
+  <div class="scroll-hint">
+    <span class="pulse">←</span>&nbsp;&nbsp;SCROLL THE JOURNEY&nbsp;&nbsp;<span class="pulse">→</span>
+  </div>
+</section>
+
+<script>
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    const el = document.getElementById('timeline-scroll');
+    if (e.key === 'ArrowLeft')  el.scrollBy({ left: -300, behavior: 'smooth' });
+    if (e.key === 'ArrowRight') el.scrollBy({ left:  300, behavior: 'smooth' });
+  });
+
+  // Click-to-toggle active state on each card
+  document.querySelectorAll('.tl-item-content').forEach(card => {
+    card.addEventListener('click', () => {
+      const isActive = card.classList.contains('clicked');
+      // Toggle clicked state on the card
+      card.classList.toggle('clicked');
+      // Toggle clicked-item on the parent tl-item (for dot animation)
+      const item = card.closest('.tl-item');
+      if (item) item.classList.toggle('clicked-item', !isActive);
+      // Re-trigger card-pop animation on repeated clicks
+      if (!isActive) {
+        card.style.animation = 'none';
+        void card.offsetWidth; // reflow
+        card.style.animation = '';
+      }
+    });
+  });
+</script>
+</body>
+</html>
